@@ -148,7 +148,8 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 		if (added) {
 			const auto targetPosition = markerRef->GetPosition();
 			const auto playerPosition = player->GetPosition();
-			float heading = std::atan2(targetPosition.x - playerPosition.x, targetPosition.y - playerPosition.y) - cameraYaw;
+			const auto worldBearing = std::atan2(targetPosition.x - playerPosition.x, targetPosition.y - playerPosition.y);
+			float heading = worldBearing - cameraYaw;
 			heading = std::fmod(heading, twoPi);
 			if (heading < 0.0F) {
 				heading += twoPi;
@@ -163,7 +164,19 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			++result.added;
 			static std::unordered_set<RE::FormID> loggedMarkers;
 			if (loggedMarkers.insert(corpse.formID).second) {
-				logger::info("Native corpse marker added for {:X}", corpse.formID);
+				auto* parentCell = player->GetParentCell();
+				const auto northRotation = parentCell ? parentCell->GetNorthRotation() : 0.0F;
+				logger::info("Native corpse marker {:X}: player=({}, {}), corpse=({}, {}), cameraYawRad={}, actorYawRad={}, cellNorthRad={}, worldBearingRad={}, relativeBearingDeg={}",
+					corpse.formID,
+					playerPosition.x,
+					playerPosition.y,
+					targetPosition.x,
+					targetPosition.y,
+					cameraYaw,
+					player->GetAngleZ(),
+					northRotation,
+					worldBearing,
+					heading * radiansToDegrees);
 			}
 		} else {
 			++result.failed;
