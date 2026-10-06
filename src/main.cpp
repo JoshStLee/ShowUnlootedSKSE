@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "CorpseTracker.h"
 
 class DeathHandler : public RE::BSTEventSink<RE::TESDeathEvent>
 {
@@ -10,8 +11,8 @@ public:
     }
 
     RE::BSEventNotifyControl ProcessEvent(
-    const RE::TESDeathEvent* a_event,
-    RE::BSTEventSource<RE::TESDeathEvent>*) override
+        const RE::TESDeathEvent* a_event,
+        RE::BSTEventSource<RE::TESDeathEvent>*) override
     {
         if (!a_event || !a_event->actorDying) {
             return RE::BSEventNotifyControl::kContinue;
@@ -28,7 +29,6 @@ public:
             return RE::BSEventNotifyControl::kContinue;
         }
 
-        // Prefer killer from the event if the struct has it
         RE::Actor* killer = nullptr;
         if (a_event->actorKiller) {
             if (auto* killerRef = a_event->actorKiller.get()) {
@@ -36,17 +36,38 @@ public:
             }
         }
 
-        // Fallback: only care that something died for now if killer is unavailable
-        const bool killedByPlayer = (killer == player);
+        const bool counts =
+            killer &&
+            (killer == player || killer->IsPlayerTeammate());
 
-        if (killedByPlayer || !killer) {  // remove "|| !killer" later if you only want player kills
-            const char* name = dead->GetDisplayFullName();
-            logger::info("Death: {} (killer: {})",
-                name ? name : "<no name>",
-                killer ? (killer->GetDisplayFullName() ? killer->GetDisplayFullName() : "unknown") : "none");
+        if (!counts) {
+            return RE::BSEventNotifyControl::kContinue;
+        }
 
-            RE::DebugNotification(
-                std::format("Killed: {}", name ? name : "something").c_str());
+        const char* name = dead->GetDisplayFullName();
+        logger::info("Death: {} (killer: {})",
+            name ? name : "<no name>",
+            killer && killer->GetDisplayFullName() ? killer->GetDisplayFullName() : "none");
+
+        RE::DebugNotification(
+            std::format("Killed: {}", name ? name : "something").c_str());
+
+        TrackedCorpse entry;
+        entry.formID    = dead->GetFormID();
+        entry.position  = dead->GetPosition();
+        entry.timestamp = RE::Calendar::GetSingleton()
+                              ? RE::Calendar::GetSingleton()->GetHoursPassed()
+                              : 0.0f;
+        entry.looted    = false;
+
+        if (CorpseTracker::Get().Add(entry)) {
+            logger::info(
+                "Tracked corpse {:X} at ({:.1f}, {:.1f}, {:.1f}) — total {}",
+                entry.formID,
+                entry.position.x, entry.position.y, entry.position.z,
+                CorpseTracker::Get().Size());
+        } else {
+            logger::debug("Corpse {:X} already tracked, skipped", entry.formID);
         }
 
         return RE::BSEventNotifyControl::kContinue;
