@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "CorpseCompassMarkers.h"
 #include "CorpseTracker.h"
 
 class DeathHandler : public RE::BSTEventSink<RE::TESDeathEvent>
@@ -54,6 +55,7 @@ public:
 
         TrackedCorpse entry;
         entry.formID    = dead->GetFormID();
+        RE::CreateRefHandle(entry.refHandle, dead);
         entry.position  = dead->GetPosition();
         entry.timestamp = RE::Calendar::GetSingleton()
                               ? RE::Calendar::GetSingleton()->GetHoursPassed()
@@ -62,8 +64,9 @@ public:
 
         if (CorpseTracker::Get().Add(entry)) {
             logger::info(
-                "Tracked corpse {:X} at ({:.1f}, {:.1f}, {:.1f}) — total {}",
+                "Tracked corpse {:X} (handle {:X}) at ({:.1f}, {:.1f}, {:.1f}) — total {}",
                 entry.formID,
+                entry.refHandle,
                 entry.position.x, entry.position.y, entry.position.z,
                 CorpseTracker::Get().Size());
         } else {
@@ -82,6 +85,7 @@ static void SKSEMessageHandler(SKSE::MessagingInterface::Message* message)
             source->AddEventSink(DeathHandler::GetSingleton());
             logger::info("DeathHandler registered");
         }
+
         break;
     }
 }
@@ -102,6 +106,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
     SKSE::Init(a_skse);
     SKSE::AllocTrampoline(1 << 10);
+    CorpseCompassMarkers::InstallHook();
 
     g_messaging->RegisterListener("SKSE", SKSEMessageHandler);
 

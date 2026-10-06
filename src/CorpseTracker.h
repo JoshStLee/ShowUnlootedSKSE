@@ -8,6 +8,7 @@
 struct TrackedCorpse
 {
     RE::FormID   formID{ 0 };
+    RE::RefHandle refHandle{ 0 };
     RE::NiPoint3 position{};
     float        timestamp{ 0.0f };
     bool         looted{ false };
