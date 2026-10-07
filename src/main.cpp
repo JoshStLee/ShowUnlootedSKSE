@@ -78,13 +78,48 @@ public:
     }
 };
 
+// The player "looking upon" a corpse — opening its container (vanilla) fires a
+// TESActivateEvent. Clearing that corpse's marker is the "unlooted" behaviour:
+// once seen, its dot disappears. (QuickLootIE-style look-at looting does not go
+// through activation, so it is a follow-up.)
+// class ActivateHandler : public RE::BSTEventSink<RE::TESActivateEvent>
+// {
+// public:
+//     static ActivateHandler* dGetSingleton()
+//     {
+//         static ActivateHandler singleton;
+//         return &singleton;
+//     }
+
+//     RE::BSEventNotifyControl ProcessEvent(
+//         const RE::TESActivateEvent* a_event,
+//         RE::BSTEventSource<RE::TESActivateEvent>*) override
+//     {
+//         if (!a_event) {
+//             return RE::BSEventNotifyControl::kContinue;
+//         }
+
+//         // Which side is the corpse depends on the event's field order; only a
+//         // tracked corpse ever matches, so testing both is safe either way.
+//         auto& tracker = CorpseTracker::Get();
+//         for (RE::TESObjectREFR* ref : { a_event->refObj.get(), a_event->actionRef.get() }) {
+//             if (ref && tracker.SetLooted(ref->GetFormID())) {
+//                 logger::info("Corpse {:X} looked upon — marker cleared", ref->GetFormID());
+//             }
+//         }
+
+//         return RE::BSEventNotifyControl::kContinue;
+//     }
+// };
+
 static void SKSEMessageHandler(SKSE::MessagingInterface::Message* message)
 {
     switch (message->type) {
     case SKSE::MessagingInterface::kDataLoaded:
         if (auto* source = RE::ScriptEventSourceHolder::GetSingleton()) {
             source->AddEventSink(DeathHandler::GetSingleton());
-            logger::info("DeathHandler registered");
+            //source->AddEventSink(ActivateHandler::GetSingleton());
+            logger::info("DeathHandler + ActivateHandler registered");
         }
 
         break; 

@@ -19,10 +19,13 @@ namespace
 	};
 	static_assert(sizeof(MarkerFrameOffsets) == 0x18);
  
-	// Frame label 'KillLoot' in the CompassMarker sprite (hudmenu.swf).
-	// Not part of the engine's MarkerFrameOffsets struct — it's a static
-	// asset-side constant, so it lives here instead of being read via relocation.
-	constexpr std::int32_t kKillLootFrame = 153;
+	// The marker's icon is chosen by FRAME LABEL, not a hard-coded frame index.
+	// hudmenu.swf (patched) gives the "KillLoot" marker frame a FrameLabel, and
+	// ScaleformMarkerData::icon is a GFxValue (not an int) precisely so it can
+	// carry that label through to Scaleform's gotoAndStop(label) resolution — so
+	// a HUD replacer only needs to preserve the label, and no frame number is
+	// baked into this plugin.
+	constexpr const char* kKillLootFrameLabel = "KillLoot";
 	struct ScaleformMarkerData
 	{
 		RE::GFxValue heading;
@@ -127,14 +130,14 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 	if (!loggedFrameOffsets) {
 		loggedFrameOffsets = true;
 		logger::info(
-			"HUD marker frames: quest={} questDoor={} playerSet={} enemy={} location={} undiscovered={} killLoot={}",
+			"HUD marker frames: quest={} questDoor={} playerSet={} enemy={} location={} undiscovered={} killLootLabel={}",
 			frameOffsets->quest,
 			frameOffsets->questDoor,
 			frameOffsets->playerSet,
 			frameOffsets->enemy,
 			frameOffsets->location,
 			frameOffsets->undiscoveredLocation,
-			kKillLootFrame);
+			kKillLootFrameLabel);
 	}
 
 	// Reused across frames so the per-frame compass update stops allocating a
@@ -149,6 +152,11 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 		return result;
 	}
 	for (const auto& corpse : corpses) {
+		// Looted corpses stop being drawn — the "unlooted" half of the feature.
+		if (corpse.looted) {
+			continue;
+		}
+
 		if (corpse.refHandle == 0) {
 			++result.unresolved;
 			continue;
@@ -175,12 +183,15 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			break;
 		}
 		
+		// AddMarker() wants a frame index to seed the slot; the visible icon is
+		// replaced by the frame label just below, so seed with an existing engine
+		// frame rather than a number we hard-code ourselves.
 		const bool added = AddMarker(
 			manager,
 			&manager->scaleformMarkerData[markerIndex],
 			&manager->position[markerIndex],
 			corpse.refHandle,
-			kKillLootFrame);
+			static_cast<std::int32_t>(frameOffsets->enemy));
 
 		if (added) {
 			const auto targetPosition = markerRef->GetPosition();
@@ -201,15 +212,15 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			auto& markerData = manager->scaleformMarkerData[markerIndex];
 			markerData.heading.SetNumber(worldBearing * radiansToDegrees);
 			markerData.alpha.SetNumber(100.0);
-			markerData.icon.SetNumber(kKillLootFrame);
+			markerData.icon.SetString(kKillLootFrameLabel);
 			markerData.scale.SetNumber(100.0);
 
 			++result.added;
 			static std::unordered_set<RE::FormID> loggedMarkers;
 			if (loggedMarkers.insert(corpse.formID).second) {
-				logger::info("Native corpse marker {:X}: icon {}",
+				logger::info("Native corpse marker {:X}: icon '{}'",
 					corpse.formID,
-					kKillLootFrame);
+					kKillLootFrameLabel);
 			}
 		} else {
 			++result.failed;
