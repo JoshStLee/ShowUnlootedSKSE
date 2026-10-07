@@ -24,7 +24,7 @@ public:
 
     std::vector<TrackedCorpse> GetSnapshot() const;
     std::size_t Size() const;
-
+    void Clear();
 private:
     CorpseTracker() = default;
 

@@ -37,3 +37,9 @@ std::size_t CorpseTracker::Size() const
     std::lock_guard lock(_mutex);
     return _corpses.size();
 }
+
+void CorpseTracker::Clear()
+{
+    std::lock_guard lock(_mutex);
+    _corpses.clear();
+}
