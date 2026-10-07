@@ -15,10 +15,14 @@ namespace
 		std::uint32_t playerSet;
 		std::uint32_t enemy;
 		std::uint32_t location;
-		std::uint32_t undiscoveredLocation;
+		std::uint32_t undiscoveredLocation; 
 	};
 	static_assert(sizeof(MarkerFrameOffsets) == 0x18);
-
+ 
+	// Frame label 'KillLoot' in the CompassMarker sprite (hudmenu.swf).
+	// Not part of the engine's MarkerFrameOffsets struct — it's a static
+	// asset-side constant, so it lives here instead of being read via relocation.
+	constexpr std::int32_t kKillLootFrame = 153;
 	struct ScaleformMarkerData
 	{
 		RE::GFxValue heading;
@@ -138,7 +142,7 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			&manager->scaleformMarkerData[markerIndex],
 			&manager->position[markerIndex],
 			corpse.refHandle,
-			static_cast<std::int32_t>(frameOffsets->enemy));
+			kKillLootFrame);
 
 		if (added) {
 			const auto targetPosition = markerRef->GetPosition();
@@ -159,7 +163,7 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			auto& markerData = manager->scaleformMarkerData[markerIndex];
 			markerData.heading.SetNumber(worldBearing * radiansToDegrees);
 			markerData.alpha.SetNumber(100.0);
-			markerData.icon.SetNumber(frameOffsets->enemy);
+			markerData.icon.SetNumber(kKillLootFrame);
 			markerData.scale.SetNumber(100.0);
 
 			++result.added;
@@ -167,14 +171,9 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			if (loggedMarkers.insert(corpse.formID).second) {
 				auto* parentCell = player->GetParentCell();
 				const auto northRotation = parentCell ? parentCell->GetNorthRotation() : 0.0F;
-				logger::info("Native corpse marker {:X}: player=({}, {}), corpse=({}, {}), actorYawRad={}, cellNorthRad={}",
-					corpse.formID,
-					player->GetPosition().x,
-					player->GetPosition().y,
-					markerRef->GetPosition().x,
-					markerRef->GetPosition().y,
-					player->GetAngleZ(),
-					northRotation);
+				logger::info("Native corpse marker {:X}: icon {}",
+					corpse.formID, 
+					kKillLootFrame);
 			}
 		} else {
 			++result.failed;
