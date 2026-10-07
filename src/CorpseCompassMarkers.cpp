@@ -85,7 +85,7 @@ namespace
 	if (!journalOpen) {
 		CorpseCompassMarkers::AppendTrackedMarkers();
 	}
-	logger::info("CompassUpdateHook: JournalOpen={}", journalOpen);
+	//logger::info("CompassUpdateHook: JournalOpen={}", journalOpen);
 	if (originalCompassUpdate) {
 		originalCompassUpdate(a_compass);
 	}
@@ -118,7 +118,31 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 		return result;
 	}
 
-	const auto corpses = CorpseTracker::Get().GetSnapshot();
+	// One-time diagnostic: these frame offsets are asset-side icon indices tied
+	// to hudmenu.swf. Logging them on first use makes any game-version or HUD
+	// replacer drift visible instead of silently mis-drawing icons. (The struct
+	// sizes/offsets themselves are compile-time guarded by the static_asserts
+	// at the top of this file.)
+	static bool loggedFrameOffsets = false;
+	if (!loggedFrameOffsets) {
+		loggedFrameOffsets = true;
+		logger::info(
+			"HUD marker frames: quest={} questDoor={} playerSet={} enemy={} location={} undiscovered={} killLoot={}",
+			frameOffsets->quest,
+			frameOffsets->questDoor,
+			frameOffsets->playerSet,
+			frameOffsets->enemy,
+			frameOffsets->location,
+			frameOffsets->undiscoveredLocation,
+			kKillLootFrame);
+	}
+
+	// Reused across frames so the per-frame compass update stops allocating a
+	// fresh vector each call. The copy under the lock is still required for
+	// thread safety — the death handler mutates the tracker on another thread.
+	static std::vector<TrackedCorpse> corpses;
+	CorpseTracker::Get().GetSnapshotInto(corpses);
+
 	auto* player = RE::PlayerCharacter::GetSingleton();
 	if (!player) {
 		++result.failed;
@@ -140,6 +164,11 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			continue;
 		} 
 
+		// AddMarker advances manager->currentMarkerIndex itself (the reference
+		// implementation, Compass Navigation Overhaul, reads
+		// `currentMarkerIndex - 1` to find the slot it just added), so reading
+		// the live value each iteration gives every corpse its own free slot.
+		// Do not hoist this out of the loop.
 		const auto markerIndex = manager->currentMarkerIndex;
 		if (markerIndex >= std::size(manager->position)) {
 			++result.full;
@@ -178,10 +207,8 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			++result.added;
 			static std::unordered_set<RE::FormID> loggedMarkers;
 			if (loggedMarkers.insert(corpse.formID).second) {
-				auto* parentCell = player->GetParentCell();
-				const auto northRotation = parentCell ? parentCell->GetNorthRotation() : 0.0F;
 				logger::info("Native corpse marker {:X}: icon {}",
-					corpse.formID, 
+					corpse.formID,
 					kKillLootFrame);
 			}
 		} else {

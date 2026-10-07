@@ -58,6 +58,21 @@ namespace
             std::uint32_t count = 0;
             a_intfc->ReadRecordData(&count, sizeof(count));
 
+            // Guard against a truncated or corrupt record: the declared entry
+            // count cannot exceed what the record's byte length can physically
+            // hold, so clamp it before trusting it to drive the read loop.
+            constexpr std::size_t kEntrySize =
+                sizeof(RE::FormID) + sizeof(RE::NiPoint3) + sizeof(float) + sizeof(bool);
+            const std::uint32_t maxCount = length >= sizeof(std::uint32_t)
+                ? static_cast<std::uint32_t>((length - sizeof(std::uint32_t)) / kEntrySize)
+                : 0;
+            if (count > maxCount) {
+                logger::warn(
+                    "Corpse tracker: record claims {} entries but its {} bytes fit only {} — clamping",
+                    count, length, maxCount);
+                count = maxCount;
+            }
+
             std::uint32_t restored = 0;
             for (std::uint32_t i = 0; i < count; ++i) {
                 RE::FormID oldFormID = 0;

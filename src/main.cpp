@@ -46,13 +46,13 @@ public:
             return RE::BSEventNotifyControl::kContinue;
         }
 
-        const char* name = dead->GetDisplayFullName();
-        logger::info("Death: {} (killer: {})",
-            name ? name : "<no name>",
-            killer && killer->GetDisplayFullName() ? killer->GetDisplayFullName() : "none");
+        // const char* name = dead->GetDisplayFullName();
+        // logger::info("Death: {} (killer: {})",
+        //     name ? name : "<no name>",
+        //     killer && killer->GetDisplayFullName() ? killer->GetDisplayFullName() : "none");
 
-        RE::DebugNotification(
-            std::format("Killed: {}", name ? name : "something").c_str());
+        // RE::DebugNotification(
+        //     std::format("Killed: {}", name ? name : "something").c_str());
 
         TrackedCorpse entry;
         entry.formID    = dead->GetFormID();

@@ -22,7 +22,16 @@ public:
     // Returns true if newly added, false if already tracked
     bool Add(const TrackedCorpse& entry);
 
+    // Marks the tracked corpse with the given FormID as looted so it stops
+    // being drawn. Returns true if a matching entry was found.
+    bool SetLooted(RE::FormID a_formID);
+
     std::vector<TrackedCorpse> GetSnapshot() const;
+
+    // Fills a caller-owned buffer instead of returning a new vector, so hot
+    // per-frame callers can reuse one buffer and avoid reallocating each time.
+    void GetSnapshotInto(std::vector<TrackedCorpse>& a_out) const;
+
     std::size_t Size() const;
     void Clear();
 private:
