@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "CorpseCompassMarkers.h"
 #include "CorpseTracker.h"
+#include "CorpseSerialization.h"
 
 class DeathHandler : public RE::BSTEventSink<RE::TESDeathEvent>
 {
@@ -86,17 +87,7 @@ static void SKSEMessageHandler(SKSE::MessagingInterface::Message* message)
             logger::info("DeathHandler registered");
         }
 
-        break;
-
-    case SKSE::MessagingInterface::kNewGame:
-        CorpseTracker::Get().Clear();
-        logger::info("New game started, corpse tracker cleared");
-        break;
-
-    case SKSE::MessagingInterface::kPostLoadGame:
-        CorpseTracker::Get().Clear();
-        logger::info("Save loaded, corpse tracker cleared");
-        break;
+        break; 
     }
     
 }
@@ -117,8 +108,8 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
     SKSE::Init(a_skse);
     SKSE::AllocTrampoline(1 << 10);
-    CorpseCompassMarkers::InstallHook();
-
+    CorpseCompassMarkers::InstallHook(); 
+    CorpseSerialization::Register();
     g_messaging->RegisterListener("SKSE", SKSEMessageHandler);
 
     return true;

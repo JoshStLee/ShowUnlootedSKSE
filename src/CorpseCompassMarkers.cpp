@@ -78,12 +78,18 @@ namespace
 	CompassUpdateFn originalCompassUpdate = nullptr;
 
 	void CompassUpdateHook(RE::HUDObject* a_compass)
-	{
+{
+	auto* ui = RE::UI::GetSingleton();
+	const bool journalOpen = ui && ui->IsMenuOpen(RE::JournalMenu::MENU_NAME);
+
+	if (!journalOpen) {
 		CorpseCompassMarkers::AppendTrackedMarkers();
-		if (originalCompassUpdate) {
-			originalCompassUpdate(a_compass);
-		}
 	}
+	logger::info("CompassUpdateHook: JournalOpen={}", journalOpen);
+	if (originalCompassUpdate) {
+		originalCompassUpdate(a_compass);
+	}
+}
 }
 
 void CorpseCompassMarkers::InstallHook()
@@ -126,17 +132,20 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 
 		RE::NiPointer<RE::TESObjectREFR> markerRef;
 		if (!RE::LookupReferenceByHandle(corpse.refHandle, markerRef) ||
-			!markerRef.get() || markerRef->GetFormID() != corpse.formID) {
+			!markerRef.get() ||
+			markerRef->GetFormID() != corpse.formID ||
+			markerRef->IsDeleted() ||
+			!markerRef->Is3DLoaded()) {
 			++result.unresolved;
 			continue;
-		}
+		} 
 
 		const auto markerIndex = manager->currentMarkerIndex;
 		if (markerIndex >= std::size(manager->position)) {
 			++result.full;
 			break;
 		}
-
+		
 		const bool added = AddMarker(
 			manager,
 			&manager->scaleformMarkerData[markerIndex],
