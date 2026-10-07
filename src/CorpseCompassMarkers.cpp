@@ -110,15 +110,10 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 
 	const auto corpses = CorpseTracker::Get().GetSnapshot();
 	auto* player = RE::PlayerCharacter::GetSingleton();
-	auto* camera = RE::PlayerCamera::GetSingleton();
-	if (!player || !camera) {
+	if (!player) {
 		++result.failed;
 		return result;
 	}
-	const auto cameraYaw = camera->GetRuntimeData2().yaw;
-	constexpr float twoPi = 6.28318530718F;
-	constexpr float radiansToDegrees = 57.2957795131F;
-
 	for (const auto& corpse : corpses) {
 		if (corpse.refHandle == 0) {
 			++result.unresolved;
@@ -148,15 +143,21 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 		if (added) {
 			const auto targetPosition = markerRef->GetPosition();
 			const auto playerPosition = player->GetPosition();
-			const auto worldBearing = std::atan2(targetPosition.x - playerPosition.x, targetPosition.y - playerPosition.y);
-			float heading = worldBearing - cameraYaw;
-			heading = std::fmod(heading, twoPi);
-			if (heading < 0.0F) {
-				heading += twoPi;
+			// Scaleform needs a numeric heading to create an injected marker.  Supply
+			// the absolute world bearing; the compass applies the player/camera yaw.
+			// Subtracting either yaw here rotates the marker a second time.
+			constexpr float twoPi = 6.28318530718F;
+			constexpr float radiansToDegrees = 57.2957795131F;
+			float worldBearing = std::atan2(
+				targetPosition.x - playerPosition.x,
+				targetPosition.y - playerPosition.y);
+			worldBearing = std::fmod(worldBearing, twoPi);
+			if (worldBearing < 0.0F) {
+				worldBearing += twoPi;
 			}
 
 			auto& markerData = manager->scaleformMarkerData[markerIndex];
-			markerData.heading.SetNumber(heading * radiansToDegrees);
+			markerData.heading.SetNumber(worldBearing * radiansToDegrees);
 			markerData.alpha.SetNumber(100.0);
 			markerData.icon.SetNumber(frameOffsets->enemy);
 			markerData.scale.SetNumber(100.0);
@@ -166,17 +167,14 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			if (loggedMarkers.insert(corpse.formID).second) {
 				auto* parentCell = player->GetParentCell();
 				const auto northRotation = parentCell ? parentCell->GetNorthRotation() : 0.0F;
-				logger::info("Native corpse marker {:X}: player=({}, {}), corpse=({}, {}), cameraYawRad={}, actorYawRad={}, cellNorthRad={}, worldBearingRad={}, relativeBearingDeg={}",
+				logger::info("Native corpse marker {:X}: player=({}, {}), corpse=({}, {}), actorYawRad={}, cellNorthRad={}",
 					corpse.formID,
-					playerPosition.x,
-					playerPosition.y,
-					targetPosition.x,
-					targetPosition.y,
-					cameraYaw,
+					player->GetPosition().x,
+					player->GetPosition().y,
+					markerRef->GetPosition().x,
+					markerRef->GetPosition().y,
 					player->GetAngleZ(),
-					northRotation,
-					worldBearing,
-					heading * radiansToDegrees);
+					northRotation);
 			}
 		} else {
 			++result.failed;
