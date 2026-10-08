@@ -56,7 +56,7 @@ bool CorpseTracker::SetLooted(RE::FormID a_formID)
         return false;
     }
 
-    corpse->looted = true;
+    _corpses.erase(corpse);
     return true;
 }
 

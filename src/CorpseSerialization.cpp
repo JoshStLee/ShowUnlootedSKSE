@@ -2,6 +2,8 @@
 #include "CorpseSerialization.h"
 #include "CorpseTracker.h"
 
+#include <algorithm>
+
 namespace
 {
     // Unique ID for this plugin's whole co-save section. Change this only if
@@ -17,7 +19,9 @@ namespace
 
     void SaveCallback(SKSE::SerializationInterface* a_intfc)
     {
-        const auto corpses = CorpseTracker::Get().GetSnapshot();
+        auto corpses = CorpseTracker::Get().GetSnapshot();
+        const auto trackedCount = corpses.size();
+        std::erase_if(corpses, [](const TrackedCorpse& a_corpse) { return a_corpse.looted; });
 
         if (!a_intfc->OpenRecord(kCorpseRecordType, kCorpseRecordVersion)) {
             logger::error("Failed to open corpse tracker record for save");
@@ -37,7 +41,9 @@ namespace
             // it on load instead, from the resolved form.
         }
 
-        logger::info("Corpse tracker: saved {} entries", count);
+        logger::info("Corpse tracker: saved {} unlooted entries (excluded {} looted)",
+            count,
+            trackedCount - corpses.size());
     }
 
     void LoadCallback(SKSE::SerializationInterface* a_intfc)
@@ -84,6 +90,12 @@ namespace
                 a_intfc->ReadRecordData(&position, sizeof(position));
                 a_intfc->ReadRecordData(&timestamp, sizeof(timestamp));
                 a_intfc->ReadRecordData(&looted, sizeof(looted));
+
+                // Older saves may contain corpses already marked as looted.
+                // They no longer need a persistent tracker entry.
+                if (looted) {
+                    continue;
+                }
 
                 RE::FormID newFormID = 0;
                 if (!a_intfc->ResolveFormID(oldFormID, newFormID)) {

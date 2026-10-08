@@ -22,8 +22,8 @@ public:
     // Returns true if newly added, false if already tracked
     bool Add(const TrackedCorpse& entry);
 
-    // Marks the tracked corpse with the given FormID as looted so it stops
-    // being drawn. Returns true if a matching entry was found.
+    // Removes the tracked corpse with the given FormID when it is looted.
+    // Returns true if a matching entry was removed.
     bool SetLooted(RE::FormID a_formID);
 
     std::vector<TrackedCorpse> GetSnapshot() const;

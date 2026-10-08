@@ -4,6 +4,8 @@
 
 #include <cstddef>
 #include <cmath>
+#include <array>
+#include <string_view>
 #include <unordered_set>
 
 namespace
@@ -80,19 +82,133 @@ namespace
 	using CompassUpdateFn = void (*)(RE::HUDObject*);
 	CompassUpdateFn originalCompassUpdate = nullptr;
 
-	void CompassUpdateHook(RE::HUDObject* a_compass)
-{
-	auto* ui = RE::UI::GetSingleton();
-	const bool journalOpen = ui && ui->IsMenuOpen(RE::JournalMenu::MENU_NAME);
+	bool InvokeGotoAndStop(RE::GFxValue& a_clip, const RE::GFxValue& a_frame)
+	{
+		return a_clip.Invoke("gotoAndStop", nullptr, &a_frame, 1);
+	}
 
-	if (!journalOpen) {
-		CorpseCompassMarkers::AppendTrackedMarkers();
+	bool ReadCurrentFrame(RE::GFxValue& a_clip, double& a_frame)
+	{
+		RE::GFxValue currentFrame;
+		if (!a_clip.GetMember("_currentframe", &currentFrame) || !currentFrame.IsNumber()) {
+			return false;
+		}
+
+		a_frame = currentFrame.GetNumber();
+		return true;
 	}
-	//logger::info("CompassUpdateHook: JournalOpen={}", journalOpen);
-	if (originalCompassUpdate) {
-		originalCompassUpdate(a_compass);
+
+	void DiagnoseKillLootLabel(RE::GFxMovieView* a_view)
+	{
+		if (!a_view) {
+			logger::warn("Scaleform KillLoot probe: HUD movie view unavailable");
+			return;
+		}
+
+		const auto* movieDef = a_view->GetMovieDef();
+		const char* movieURL = movieDef ? movieDef->GetFileURL() : nullptr;
+		logger::info("Scaleform KillLoot probe: active HUD movie='{}'",
+			movieURL ? movieURL : "<unknown>");
+
+		// HUDMenu's InitCompass() uses this same exported symbol and attaches it
+		// under CompassRect to discover the built-in marker frames. Use an
+		// invisible temporary instance so the diagnostic checks the actual
+		// Compass Marker timeline in the active HUD without changing a live icon.
+		RE::GFxValue compassRect;
+		constexpr std::array<std::string_view, 3> compassRectPaths{
+			"_root.HUDMovieBaseInstance.CompassShoutMeterHolder.Compass.DirectionRect",
+			"_root.CompassShoutMeterHolder.Compass.DirectionRect",
+			"CompassShoutMeterHolder.Compass.DirectionRect"
+		};
+		std::string_view resolvedPath;
+		for (const auto path : compassRectPaths) {
+			if (a_view->GetVariable(&compassRect, path.data()) && compassRect.IsDisplayObject()) {
+				resolvedPath = path;
+				break;
+			}
+		}
+		if (resolvedPath.empty()) {
+			logger::warn("Scaleform KillLoot probe: could not resolve Compass DirectionRect in active HUD");
+			return;
+		}
+
+		RE::GFxValue depth;
+		if (!compassRect.Invoke("getNextHighestDepth", &depth, nullptr, 0) || !depth.IsNumber()) {
+			logger::warn("Scaleform KillLoot probe: could not get a temporary compass depth (path='{}')", resolvedPath);
+			return;
+		}
+
+		RE::GFxValue attachArgs[3];
+		attachArgs[0].SetString("Compass Marker");
+		attachArgs[1].SetString("ShowUnlootedKillLootProbe");
+		attachArgs[2] = depth;
+		RE::GFxValue probeClip;
+		if (!compassRect.Invoke("attachMovie", &probeClip, attachArgs, 3) || !probeClip.IsDisplayObject()) {
+			logger::warn("Scaleform KillLoot probe: active HUD could not attach the exported 'Compass Marker' clip");
+			return;
+		}
+
+		RE::GFxValue hidden;
+		hidden.SetBoolean(false);
+		probeClip.SetMember("_visible", hidden);
+		RE::GFxValue zeroAlpha;
+		zeroAlpha.SetNumber(0.0);
+		probeClip.SetMember("_alpha", zeroAlpha);
+
+		RE::GFxValue frameOne;
+		frameOne.SetNumber(1.0);
+		RE::GFxValue frameTwo;
+		frameTwo.SetNumber(2.0);
+		RE::GFxValue frameLabel(kKillLootFrameLabel);
+		double resolvedFromOne = 0.0;
+		double resolvedFromTwo = 0.0;
+		const bool firstProbe = InvokeGotoAndStop(probeClip, frameOne) &&
+			InvokeGotoAndStop(probeClip, frameLabel) &&
+			ReadCurrentFrame(probeClip, resolvedFromOne);
+		const bool secondProbe = InvokeGotoAndStop(probeClip, frameTwo) &&
+			InvokeGotoAndStop(probeClip, frameLabel) &&
+			ReadCurrentFrame(probeClip, resolvedFromTwo);
+
+		RE::GFxValue ignored;
+		probeClip.Invoke("removeMovieClip", &ignored, nullptr, 0);
+
+		if (firstProbe && secondProbe) {
+			const bool found = resolvedFromOne == resolvedFromTwo;
+			logger::info(
+				"Scaleform KillLoot probe: label '{}' {} on Compass Marker (frames after probes: {}, {}; path='{}')",
+				kKillLootFrameLabel,
+				found ? "RESOLVED" : "NOT FOUND",
+				resolvedFromOne,
+				resolvedFromTwo,
+				resolvedPath);
+		} else {
+			logger::warn("Scaleform KillLoot probe: could not read Compass Marker timeline state (path='{}')", resolvedPath);
+		}
 	}
-}
+
+	void CompassUpdateHook(RE::HUDObject* a_compass)
+	{
+		static bool diagnosedHud = false;
+		if (!diagnosedHud) {
+			auto* ui = RE::UI::GetSingleton();
+			auto hudView = ui ? ui->GetMovieView(RE::HUDMenu::MENU_NAME) : nullptr;
+			if (hudView) {
+				DiagnoseKillLootLabel(hudView.get());
+				diagnosedHud = true;
+			}
+		}
+
+		auto* ui = RE::UI::GetSingleton();
+		const bool journalOpen = ui && ui->IsMenuOpen(RE::JournalMenu::MENU_NAME);
+
+		if (!journalOpen) {
+			CorpseCompassMarkers::AppendTrackedMarkers();
+		}
+		//logger::info("CompassUpdateHook: JournalOpen={}", journalOpen);
+		if (originalCompassUpdate) {
+			originalCompassUpdate(a_compass);
+		}
+	}
 }
 
 void CorpseCompassMarkers::InstallHook()
