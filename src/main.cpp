@@ -2,6 +2,7 @@
 #include "CorpseCompassMarkers.h"
 #include "CorpseTracker.h"
 #include "CorpseSerialization.h"
+#include "QuickLootIntegration.h"
 
 class DeathHandler : public RE::BSTEventSink<RE::TESDeathEvent>
 {
@@ -78,50 +79,47 @@ public:
     }
 };
 
-// The player "looking upon" a corpse — opening its container (vanilla) fires a
-// TESActivateEvent. Clearing that corpse's marker is the "unlooted" behaviour:
-// once seen, its dot disappears. (QuickLootIE-style look-at looting does not go
-// through activation, so it is a follow-up.)
-// class ActivateHandler : public RE::BSTEventSink<RE::TESActivateEvent>
-// {
-// public:
-//     static ActivateHandler* dGetSingleton()
-//     {
-//         static ActivateHandler singleton;
-//         return &singleton;
-//     }
+// Activating a corpse opens its container. Clear that corpse's marker once the
+// activation event identifies it as the object being activated. QuickLootIE's
+// separate menu-open API is handled by QuickLootIntegration.
+class ActivateHandler : public RE::BSTEventSink<RE::TESActivateEvent>
+{
+    public:
+        static ActivateHandler* GetSingleton()
+        {
+            static ActivateHandler singleton;
+            return &singleton;
+        }
 
-//     RE::BSEventNotifyControl ProcessEvent(
-//         const RE::TESActivateEvent* a_event,
-//         RE::BSTEventSource<RE::TESActivateEvent>*) override
-//     {
-//         if (!a_event) {
-//             return RE::BSEventNotifyControl::kContinue;
-//         }
+        RE::BSEventNotifyControl ProcessEvent(
+            const RE::TESActivateEvent* a_event,
+            RE::BSTEventSource<RE::TESActivateEvent>*) override
+        {
+            if (!a_event) {
+                return RE::BSEventNotifyControl::kContinue;
+            }
 
-//         // Which side is the corpse depends on the event's field order; only a
-//         // tracked corpse ever matches, so testing both is safe either way.
-//         auto& tracker = CorpseTracker::Get();
-//         for (RE::TESObjectREFR* ref : { a_event->refObj.get(), a_event->actionRef.get() }) {
-//             if (ref && tracker.SetLooted(ref->GetFormID())) {
-//                 logger::info("Corpse {:X} looked upon — marker cleared", ref->GetFormID());
-//             }
-//         }
+            // objectActivated is the target; actionRef is the actor performing
+            // the activation. Only the target should be marked as looted.
+            auto* activated = a_event->objectActivated.get();
+            if (activated && CorpseTracker::Get().SetLooted(activated->GetFormID())) {
+                logger::info("Corpse {:X} activated — marker cleared", activated->GetFormID());
+            }
 
-//         return RE::BSEventNotifyControl::kContinue;
-//     }
-// };
+            return RE::BSEventNotifyControl::kContinue;
+        }
+};
 
 static void SKSEMessageHandler(SKSE::MessagingInterface::Message* message)
 {
     switch (message->type) {
     case SKSE::MessagingInterface::kDataLoaded:
+        QuickLootIntegration::Register();
         if (auto* source = RE::ScriptEventSourceHolder::GetSingleton()) {
             source->AddEventSink(DeathHandler::GetSingleton());
-            //source->AddEventSink(ActivateHandler::GetSingleton());
+            source->AddEventSink(ActivateHandler::GetSingleton());
             logger::info("DeathHandler + ActivateHandler registered");
-        }
-
+        } 
         break; 
     }
     

@@ -1,12 +1,9 @@
-# CommonLibSSE-NG Empty Plugin Template
+# ShowUnlootedSKSE plugin
 
-A minimal SKSE plugin template for Skyrim SE/AE using CommonLibSSE-NG. It does not include PrismaUI or enable Skyrim VR for downsizing.
+This is a plugin made by SKSE and CommonlibSSE NG with the purpose of showing Actor NPCs killed by the player and his/her teammates which haven't been looted yet. The code references Compass Navigation Overhaul repository (https://github.com/alexsylex/CompassNavigationOverhaul/tree/main) to develop hooks that interact with the compass UI.
 
-# Requires ClibDT for the sake of your glutes
-# Getting Started
-ClibDT (https://www.nexusmods.com/skyrimspecialedition/mods/154240)
+## TODOs 
+__1. `looted` is never set to `true` anywhere. The field exists, is serialized, defaults false — but nothing ever flips it. Your plugin is literally named *looted*, and the "unlooted" half isn't implemented yet. When you get to it, the natural trigger is a `TESContainerChangedEvent`/ `TESActivateEvent` or the actor's container being opened; whatever you pick needs to write back through a `SetLooted(formID)` on the tracker. That's the core feature gap, not a bug.
 
-if you botch the installation, this entire repo won't do you any good because now you have to figure out everything that's supposed to be streamlined by yourself
+__2. Make UI overhauls of HUDMenu (oh bother)
 
-# Build
-if you actually nail the installation, a simple `xmake build` would suffice, or at least the compile project function in ClibDT would work.
