@@ -2,11 +2,10 @@
 #include "CorpseCompassMarkers.h"
 #include "CorpseTracker.h"
 
-#include <cstddef>
-#include <cmath>
 #include <array>
+#include <cmath>
+#include <cstddef>
 #include <string_view>
-#include <unordered_set>
 
 namespace
 {
@@ -17,17 +16,12 @@ namespace
 		std::uint32_t playerSet;
 		std::uint32_t enemy;
 		std::uint32_t location;
-		std::uint32_t undiscoveredLocation; 
+		std::uint32_t undiscoveredLocation;
 	};
 	static_assert(sizeof(MarkerFrameOffsets) == 0x18);
- 
-	// The marker's icon is chosen by FRAME LABEL, not a hard-coded frame index.
-	// hudmenu.swf (patched) gives the "KillLoot" marker frame a FrameLabel, and
-	// ScaleformMarkerData::icon is a GFxValue (not an int) precisely so it can
-	// carry that label through to Scaleform's gotoAndStop(label) resolution — so
-	// a HUD replacer only needs to preserve the label, and no frame number is
-	// baked into this plugin.
+
 	constexpr const char* kKillLootFrameLabel = "KillLoot";
+
 	struct ScaleformMarkerData
 	{
 		RE::GFxValue heading;
@@ -81,6 +75,7 @@ namespace
 
 	using CompassUpdateFn = void (*)(RE::HUDObject*);
 	CompassUpdateFn originalCompassUpdate = nullptr;
+	bool killLootLabelResolved = false;
 
 	bool InvokeGotoAndStop(RE::GFxValue& a_clip, const RE::GFxValue& a_frame)
 	{
@@ -98,44 +93,32 @@ namespace
 		return true;
 	}
 
-	void DiagnoseKillLootLabel(RE::GFxMovieView* a_view)
+	bool ProbeKillLootLabel(RE::GFxMovieView* a_view)
 	{
 		if (!a_view) {
-			logger::warn("Scaleform KillLoot probe: HUD movie view unavailable");
-			return;
+			return false;
 		}
 
-		const auto* movieDef = a_view->GetMovieDef();
-		const char* movieURL = movieDef ? movieDef->GetFileURL() : nullptr;
-		logger::info("Scaleform KillLoot probe: active HUD movie='{}'",
-			movieURL ? movieURL : "<unknown>");
-
-		// HUDMenu's InitCompass() uses this same exported symbol and attaches it
-		// under CompassRect to discover the built-in marker frames. Use an
-		// invisible temporary instance so the diagnostic checks the actual
-		// Compass Marker timeline in the active HUD without changing a live icon.
 		RE::GFxValue compassRect;
 		constexpr std::array<std::string_view, 3> compassRectPaths{
 			"_root.HUDMovieBaseInstance.CompassShoutMeterHolder.Compass.DirectionRect",
 			"_root.CompassShoutMeterHolder.Compass.DirectionRect",
 			"CompassShoutMeterHolder.Compass.DirectionRect"
 		};
-		std::string_view resolvedPath;
 		for (const auto path : compassRectPaths) {
 			if (a_view->GetVariable(&compassRect, path.data()) && compassRect.IsDisplayObject()) {
-				resolvedPath = path;
 				break;
 			}
 		}
-		if (resolvedPath.empty()) {
-			logger::warn("Scaleform KillLoot probe: could not resolve Compass DirectionRect in active HUD");
-			return;
+		if (!compassRect.IsDisplayObject()) {
+			logger::info("HUD KillLoot label probe unavailable; using enemy icon frame");
+			return false;
 		}
 
 		RE::GFxValue depth;
 		if (!compassRect.Invoke("getNextHighestDepth", &depth, nullptr, 0) || !depth.IsNumber()) {
-			logger::warn("Scaleform KillLoot probe: could not get a temporary compass depth (path='{}')", resolvedPath);
-			return;
+			logger::info("HUD KillLoot label probe unavailable; using enemy icon frame");
+			return false;
 		}
 
 		RE::GFxValue attachArgs[3];
@@ -144,8 +127,8 @@ namespace
 		attachArgs[2] = depth;
 		RE::GFxValue probeClip;
 		if (!compassRect.Invoke("attachMovie", &probeClip, attachArgs, 3) || !probeClip.IsDisplayObject()) {
-			logger::warn("Scaleform KillLoot probe: active HUD could not attach the exported 'Compass Marker' clip");
-			return;
+			logger::info("HUD KillLoot label probe unavailable; using enemy icon frame");
+			return false;
 		}
 
 		RE::GFxValue hidden;
@@ -162,49 +145,42 @@ namespace
 		RE::GFxValue frameLabel(kKillLootFrameLabel);
 		double resolvedFromOne = 0.0;
 		double resolvedFromTwo = 0.0;
-		const bool firstProbe = InvokeGotoAndStop(probeClip, frameOne) &&
+		const bool testedFromOne = InvokeGotoAndStop(probeClip, frameOne) &&
 			InvokeGotoAndStop(probeClip, frameLabel) &&
 			ReadCurrentFrame(probeClip, resolvedFromOne);
-		const bool secondProbe = InvokeGotoAndStop(probeClip, frameTwo) &&
+		const bool testedFromTwo = InvokeGotoAndStop(probeClip, frameTwo) &&
 			InvokeGotoAndStop(probeClip, frameLabel) &&
 			ReadCurrentFrame(probeClip, resolvedFromTwo);
 
 		RE::GFxValue ignored;
 		probeClip.Invoke("removeMovieClip", &ignored, nullptr, 0);
 
-		if (firstProbe && secondProbe) {
-			const bool found = resolvedFromOne == resolvedFromTwo;
-			logger::info(
-				"Scaleform KillLoot probe: label '{}' {} on Compass Marker (frames after probes: {}, {}; path='{}')",
-				kKillLootFrameLabel,
-				found ? "RESOLVED" : "NOT FOUND",
-				resolvedFromOne,
-				resolvedFromTwo,
-				resolvedPath);
+		const bool resolved = testedFromOne && testedFromTwo && resolvedFromOne == resolvedFromTwo;
+		if (resolved) {
+			logger::info("HUD KillLoot label '{}' resolved", kKillLootFrameLabel);
 		} else {
-			logger::warn("Scaleform KillLoot probe: could not read Compass Marker timeline state (path='{}')", resolvedPath);
+			logger::info("HUD KillLoot label not resolved; using enemy icon frame");
 		}
+		return resolved;
 	}
 
 	void CompassUpdateHook(RE::HUDObject* a_compass)
 	{
-		static bool diagnosedHud = false;
-		if (!diagnosedHud) {
-			auto* ui = RE::UI::GetSingleton();
-			auto hudView = ui ? ui->GetMovieView(RE::HUDMenu::MENU_NAME) : nullptr;
+		auto* ui = RE::UI::GetSingleton();
+		static bool probeAttempted = false;
+		if (!probeAttempted && ui) {
+			auto hudView = ui->GetMovieView(RE::HUDMenu::MENU_NAME);
 			if (hudView) {
-				DiagnoseKillLootLabel(hudView.get());
-				diagnosedHud = true;
+				killLootLabelResolved = ProbeKillLootLabel(hudView.get());
+				probeAttempted = true;
 			}
 		}
 
-		auto* ui = RE::UI::GetSingleton();
 		const bool journalOpen = ui && ui->IsMenuOpen(RE::JournalMenu::MENU_NAME);
 
 		if (!journalOpen) {
 			CorpseCompassMarkers::AppendTrackedMarkers();
 		}
-		//logger::info("CompassUpdateHook: JournalOpen={}", journalOpen);
 		if (originalCompassUpdate) {
 			originalCompassUpdate(a_compass);
 		}
@@ -226,34 +202,12 @@ void CorpseCompassMarkers::InstallHook()
 	}
 }
 
-CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
+void CorpseCompassMarkers::AppendTrackedMarkers()
 {
-	InsertResult result;
 	auto* manager = GetMarkerManager();
 	auto* frameOffsets = GetMarkerFrameOffsets();
 	if (!manager || !frameOffsets) {
-		logger::warn("Native corpse marker probe: manager or frame offsets unavailable");
-		++result.failed;
-		return result;
-	}
-
-	// One-time diagnostic: these frame offsets are asset-side icon indices tied
-	// to hudmenu.swf. Logging them on first use makes any game-version or HUD
-	// replacer drift visible instead of silently mis-drawing icons. (The struct
-	// sizes/offsets themselves are compile-time guarded by the static_asserts
-	// at the top of this file.)
-	static bool loggedFrameOffsets = false;
-	if (!loggedFrameOffsets) {
-		loggedFrameOffsets = true;
-		logger::info(
-			"HUD marker frames: quest={} questDoor={} playerSet={} enemy={} location={} undiscovered={} killLootLabel={}",
-			frameOffsets->quest,
-			frameOffsets->questDoor,
-			frameOffsets->playerSet,
-			frameOffsets->enemy,
-			frameOffsets->location,
-			frameOffsets->undiscoveredLocation,
-			kKillLootFrameLabel);
+		return;
 	}
 
 	// Reused across frames so the per-frame compass update stops allocating a
@@ -264,8 +218,7 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 
 	auto* player = RE::PlayerCharacter::GetSingleton();
 	if (!player) {
-		++result.failed;
-		return result;
+		return;
 	}
 	for (const auto& corpse : corpses) {
 		// Looted corpses stop being drawn — the "unlooted" half of the feature.
@@ -274,7 +227,6 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 		}
 
 		if (corpse.refHandle == 0) {
-			++result.unresolved;
 			continue;
 		}
 
@@ -284,7 +236,6 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 			markerRef->GetFormID() != corpse.formID ||
 			markerRef->IsDeleted() ||
 			!markerRef->Is3DLoaded()) {
-			++result.unresolved;
 			continue;
 		} 
 
@@ -295,53 +246,44 @@ CorpseCompassMarkers::InsertResult CorpseCompassMarkers::AppendTrackedMarkers()
 		// Do not hoist this out of the loop.
 		const auto markerIndex = manager->currentMarkerIndex;
 		if (markerIndex >= std::size(manager->position)) {
-			++result.full;
 			break;
 		}
-		
-		// AddMarker() wants a frame index to seed the slot; the visible icon is
-		// replaced by the frame label just below, so seed with an existing engine
-		// frame rather than a number we hard-code ourselves.
-		const bool added = AddMarker(
+
+		// Seed the slot with the engine's enemy frame. The final icon uses the
+		// KillLoot label when the HUD probe resolves it, and otherwise keeps this
+		// enemy frame as the fallback.
+		if (!AddMarker(
 			manager,
 			&manager->scaleformMarkerData[markerIndex],
 			&manager->position[markerIndex],
 			corpse.refHandle,
-			static_cast<std::int32_t>(frameOffsets->enemy));
-
-		if (added) {
-			const auto targetPosition = markerRef->GetPosition();
-			const auto playerPosition = player->GetPosition();
-			// Scaleform needs a numeric heading to create an injected marker.  Supply
-			// the absolute world bearing; the compass applies the player/camera yaw.
-			// Subtracting either yaw here rotates the marker a second time.
-			constexpr float twoPi = 6.28318530718F;
-			constexpr float radiansToDegrees = 57.2957795131F;
-			float worldBearing = std::atan2(
-				targetPosition.x - playerPosition.x,
-				targetPosition.y - playerPosition.y);
-			worldBearing = std::fmod(worldBearing, twoPi);
-			if (worldBearing < 0.0F) {
-				worldBearing += twoPi;
-			}
-
-			auto& markerData = manager->scaleformMarkerData[markerIndex];
-			markerData.heading.SetNumber(worldBearing * radiansToDegrees);
-			markerData.alpha.SetNumber(100.0);
-			markerData.icon.SetString(kKillLootFrameLabel);
-			markerData.scale.SetNumber(100.0);
-
-			++result.added;
-			static std::unordered_set<RE::FormID> loggedMarkers;
-			if (loggedMarkers.insert(corpse.formID).second) {
-				logger::info("Native corpse marker {:X}: icon '{}'",
-					corpse.formID,
-					kKillLootFrameLabel);
-			}
-		} else {
-			++result.failed;
+			static_cast<std::int32_t>(frameOffsets->enemy))) {
+			continue;
 		}
-	}
 
-	return result;
+		const auto targetPosition = markerRef->GetPosition();
+		const auto playerPosition = player->GetPosition();
+		// Scaleform needs a numeric heading to create an injected marker. Supply
+		// the absolute world bearing; the compass applies the player/camera yaw.
+		// Subtracting either yaw here rotates the marker a second time.
+		constexpr float twoPi = 6.28318530718F;
+		constexpr float radiansToDegrees = 57.2957795131F;
+		float worldBearing = std::atan2(
+			targetPosition.x - playerPosition.x,
+			targetPosition.y - playerPosition.y);
+		worldBearing = std::fmod(worldBearing, twoPi);
+		if (worldBearing < 0.0F) {
+			worldBearing += twoPi;
+		}
+
+		auto& markerData = manager->scaleformMarkerData[markerIndex];
+		markerData.heading.SetNumber(worldBearing * radiansToDegrees);
+		markerData.alpha.SetNumber(100.0);
+		if (killLootLabelResolved) {
+			markerData.icon.SetString(kKillLootFrameLabel);
+		} else {
+			markerData.icon.SetNumber(static_cast<double>(frameOffsets->enemy));
+		}
+		markerData.scale.SetNumber(100.0);
+	}
 }
