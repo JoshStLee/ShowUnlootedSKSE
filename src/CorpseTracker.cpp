@@ -60,6 +60,23 @@ bool CorpseTracker::SetLooted(RE::FormID a_formID)
     return true;
 }
 
+bool CorpseTracker::Forget(RE::FormID a_formID, RE::RefHandle a_refHandle)
+{
+    std::lock_guard lock(_mutex);
+
+    const auto corpse = std::find_if(
+        _corpses.begin(),
+        _corpses.end(),
+        [&](const TrackedCorpse& c) { return c.formID == a_formID && c.refHandle == a_refHandle; });
+
+    if (corpse == _corpses.end()) {
+        return false;
+    }
+
+    _corpses.erase(corpse);
+    return true;
+}
+
 std::vector<TrackedCorpse> CorpseTracker::GetSnapshot() const
 {
     std::lock_guard lock(_mutex);

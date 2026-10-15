@@ -26,6 +26,9 @@ public:
     // Returns true if a matching entry was removed.
     bool SetLooted(RE::FormID a_formID);
 
+    // Removes an invalid corpse only if both identity fields still match.
+    bool Forget(RE::FormID a_formID, RE::RefHandle a_refHandle);
+
     std::vector<TrackedCorpse> GetSnapshot() const;
 
     // Fills a caller-owned buffer instead of returning a new vector, so hot

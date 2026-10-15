@@ -203,11 +203,48 @@ namespace
         return resolved;
     }
 
+    bool IsCompassHUDVisible(RE::HUDObject* a_compass, RE::UI* a_ui)
+    {
+        if (!a_compass || !a_compass->view || !a_ui ||
+            a_ui->IsMenuOpen(RE::JournalMenu::MENU_NAME) ||
+            a_ui->IsMenuOpen(RE::LockpickingMenu::MENU_NAME)) {
+            return false;
+        }
+
+        constexpr std::array<const char*, 3> compassPaths{
+            "_root.HUDMovieBaseInstance.CompassShoutMeterHolder.Compass",
+            "_root.CompassShoutMeterHolder.Compass",
+            "CompassShoutMeterHolder.Compass"
+        };
+
+        for (const auto* path : compassPaths) {
+            RE::GFxValue compassClip;
+            if (!a_compass->view->GetVariable(&compassClip, path) || !compassClip.IsDisplayObject()) {
+                continue;
+            }
+
+            RE::GFxValue visible;
+            if (!compassClip.GetMember("_visible", &visible) || !visible.IsBool() || !visible.GetBool()) {
+                return false;
+            }
+
+            RE::GFxValue alpha;
+            if (compassClip.GetMember("_alpha", &alpha) && alpha.IsNumber() && alpha.GetNumber() <= 0.0) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     void CompassUpdateHook(RE::HUDObject* a_compass)
     {
         auto* ui = RE::UI::GetSingleton();
+        const bool compassVisible = IsCompassHUDVisible(a_compass, ui);
         static bool probeAttempted = false;
-        if (!probeAttempted && ui) {
+        if (!probeAttempted && compassVisible && ui) {
             auto hudView = ui->GetMovieView(RE::HUDMenu::MENU_NAME);
             if (hudView) {
                 killLootLabelResolved = ProbeKillLootLabel(hudView.get());
@@ -215,9 +252,7 @@ namespace
             }
         }
 
-        const bool journalOpen = ui && ui->IsMenuOpen(RE::JournalMenu::MENU_NAME);
-
-        if (!journalOpen) {
+        if (compassVisible) {
             CorpseCompassMarkers::AppendTrackedMarkers();
         }
         if (originalCompassUpdate) {
@@ -251,6 +286,7 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 
     static std::vector<TrackedCorpse> corpses;
     CorpseTracker::Get().GetSnapshotInto(corpses);
+    std::vector<TrackedCorpse> invalidCorpses;
 
     auto* player = RE::PlayerCharacter::GetSingleton();
     if (!player) {
@@ -269,11 +305,17 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
         }
 
         RE::NiPointer<RE::TESObjectREFR> markerRef;
-        if (!RE::LookupReferenceByHandle(corpse.refHandle, markerRef) ||
-            !markerRef.get() ||
-            markerRef->GetFormID() != corpse.formID ||
-            markerRef->IsDeleted() ||
-            !markerRef->Is3DLoaded()) {
+        if (!RE::LookupReferenceByHandle(corpse.refHandle, markerRef)) {
+            continue;
+        }
+
+        auto* reference = markerRef.get();
+        if (!reference || reference->GetFormID() != corpse.formID || reference->IsDeleted()) {
+            invalidCorpses.push_back(corpse);
+            continue;
+        }
+
+        if (!reference->Is3DLoaded()) {
             continue;
         }
 
@@ -312,5 +354,13 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
             markerData.icon.SetNumber(static_cast<double>(enemyIconFrame));
         }
         markerData.scale.SetNumber(100.0);
+    }
+
+    for (const auto& corpse : invalidCorpses) {
+        CorpseTracker::Get().Forget(corpse.formID, corpse.refHandle);
+        logger::info(
+            "Dropped invalid tracked corpse {:X} (handle {:X})",
+            corpse.formID,
+            corpse.refHandle);
     }
 }
