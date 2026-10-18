@@ -2,10 +2,13 @@
 #include "CorpseCompassMarkers.h"
 #include "CorpseTracker.h"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <mutex>
 #include <string_view>
+#include <vector>
 
 namespace
 {
@@ -278,89 +281,171 @@ void CorpseCompassMarkers::InstallHook()
 
 void CorpseCompassMarkers::AppendTrackedMarkers()
 {
-    auto* manager = GetMarkerManager();
-    auto* frameOffsets = GetMarkerFrameOffsets();
-    if (!manager || !frameOffsets) {
-        return;
-    }
+	struct MarkerTraceKey
+	{
+		std::uint32_t markerIndex;
+		RE::FormID formID;
+		RE::RefHandle refHandle;
+	};
+	static std::vector<MarkerTraceKey> loggedMarkerAttempts;
+	static std::mutex markerTraceMutex;
+	const auto shouldLogMarkerOnce = [&](std::uint32_t markerIndex, RE::FormID formID, RE::RefHandle refHandle) {
+		std::lock_guard lock(markerTraceMutex);
+		const auto alreadyLogged = std::find_if(
+			loggedMarkerAttempts.begin(),
+			loggedMarkerAttempts.end(),
+			[&](const MarkerTraceKey& key) {
+				return key.markerIndex == markerIndex && key.formID == formID && key.refHandle == refHandle;
+			});
+		if (alreadyLogged != loggedMarkerAttempts.end()) {
+			return false;
+		}
+		loggedMarkerAttempts.push_back({ markerIndex, formID, refHandle });
+		return true;
+	};
 
-    static std::vector<TrackedCorpse> corpses;
-    CorpseTracker::Get().GetSnapshotInto(corpses);
-    std::vector<TrackedCorpse> invalidCorpses;
+	auto* manager = GetMarkerManager();
+	auto* frameOffsets = GetMarkerFrameOffsets();
+	if (!manager || !frameOffsets) {
+		return;
+	}
 
-    auto* player = RE::PlayerCharacter::GetSingleton();
-    if (!player) {
-        return;
-    }
+	static std::vector<TrackedCorpse> corpses;
+	CorpseTracker::Get().GetSnapshotInto(corpses);
+	{
+		std::lock_guard lock(markerTraceMutex);
+		loggedMarkerAttempts.erase(
+			std::remove_if(
+				loggedMarkerAttempts.begin(),
+				loggedMarkerAttempts.end(),
+				[&](const MarkerTraceKey& key) {
+					return std::none_of(corpses.begin(), corpses.end(), [&](const TrackedCorpse& corpse) {
+						return corpse.formID == key.formID && corpse.refHandle == key.refHandle;
+					});
+				}),
+			loggedMarkerAttempts.end());
+	}
+	std::vector<TrackedCorpse> invalidCorpses;
 
-    const auto enemyIconFrame = static_cast<std::int32_t>(frameOffsets->enemy);
+	auto* player = RE::PlayerCharacter::GetSingleton();
+	if (!player) {
+		return;
+	}
 
-    for (const auto& corpse : corpses) {
-        if (corpse.looted) {
-            continue;
-        }
+	const auto enemyIconFrame = static_cast<std::int32_t>(frameOffsets->enemy);
 
-        if (corpse.refHandle == 0) {
-            continue;
-        }
+	for (const auto& corpse : corpses) {
+		if (corpse.looted) {
+			continue;
+		}
 
-        RE::NiPointer<RE::TESObjectREFR> markerRef;
-        if (!RE::LookupReferenceByHandle(corpse.refHandle, markerRef)) {
-            continue;
-        }
+		if (corpse.refHandle == 0) {
+			continue;
+		}
 
-        auto* reference = markerRef.get();
-        if (!reference || reference->GetFormID() != corpse.formID || reference->IsDeleted()) {
-            invalidCorpses.push_back(corpse);
-            continue;
-        }
+		RE::NiPointer<RE::TESObjectREFR> markerRef;
+		if (!RE::LookupReferenceByHandle(corpse.refHandle, markerRef)) {
+			// Handle gone — drop so we stop trying every frame.
+			invalidCorpses.push_back(corpse);
+			continue;
+		}
 
-        if (!reference->Is3DLoaded()) {
-            continue;
-        }
+		auto* reference = markerRef.get();
+		if (!reference || reference->GetFormID() != corpse.formID || reference->IsDeleted()) {
+			invalidCorpses.push_back(corpse);
+			continue;
+		}
 
-        const auto markerIndex = manager->currentMarkerIndex;
-        if (markerIndex >= std::size(manager->position)) {
-            break;
-        }
+		// CTD path: Orc FF002D76 had ParentCell --- after QuickLoot re-track.
+		// Native AddMarker dec's through garbage when the ref is detached.
+		if (!reference->GetParentCell()) {
+			invalidCorpses.push_back(corpse);
+			continue;
+		}
 
-        if (!AddMarker(
-            manager,
-            &manager->scaleformMarkerData[markerIndex],
-            &manager->position[markerIndex],
-            corpse.refHandle,
-            enemyIconFrame)) {
-            continue;
-        }
+		auto* actor = reference->As<RE::Actor>();
+		if (!actor || !actor->IsDead()) {
+			invalidCorpses.push_back(corpse);
+			continue;
+		}
 
-        const auto targetPosition = markerRef->GetPosition();
-        const auto playerPosition = player->GetPosition();
-        constexpr float twoPi = 6.28318530718F;
-        constexpr float radiansToDegrees = 57.2957795131F;
-        float worldBearing = std::atan2(
-            targetPosition.x - playerPosition.x,
-            targetPosition.y - playerPosition.y);
-        worldBearing = std::fmod(worldBearing, twoPi);
-        if (worldBearing < 0.0F) {
-            worldBearing += twoPi;
-        }
+		if (!reference->Is3DLoaded()) {
+			continue;
+		}
 
-        auto& markerData = manager->scaleformMarkerData[markerIndex];
-        markerData.heading.SetNumber(worldBearing * radiansToDegrees);
-        markerData.alpha.SetNumber(100.0);
-        if (killLootLabelResolved) {
-            markerData.icon.SetString(kKillLootFrameLabel);
-        } else {
-            markerData.icon.SetNumber(static_cast<double>(enemyIconFrame));
-        }
-        markerData.scale.SetNumber(100.0);
-    }
+		const auto markerIndex = manager->currentMarkerIndex;
+		if (markerIndex >= std::size(manager->position)) {
+			if (shouldLogMarkerOnce(markerIndex, corpse.formID, corpse.refHandle)) {
+				logger::warn(
+					"Skipping corpse marker {:X} (handle {:X}): marker index {} exceeds capacity {}",
+					corpse.formID,
+					corpse.refHandle,
+					markerIndex,
+					std::size(manager->position));
+			}
+			break;
+		}
 
-    for (const auto& corpse : invalidCorpses) {
-        CorpseTracker::Get().Forget(corpse.formID, corpse.refHandle);
-        logger::info(
-            "Dropped invalid tracked corpse {:X} (handle {:X})",
-            corpse.formID,
-            corpse.refHandle);
-    }
+		const bool traceAttempt = shouldLogMarkerOnce(markerIndex, corpse.formID, corpse.refHandle);
+		if (traceAttempt) {
+			logger::info(
+				"Native marker attempt: corpse={:X} handle={:X} markerIndex={} cell={:X} reference={:p}",
+				corpse.formID,
+				corpse.refHandle,
+				markerIndex,
+				reference->GetParentCell()->GetFormID(),
+				static_cast<const void*>(reference));
+		}
+
+		const bool markerAdded = AddMarker(
+			manager,
+			&manager->scaleformMarkerData[markerIndex],
+			&manager->position[markerIndex],
+			corpse.refHandle,
+			enemyIconFrame);
+
+		if (traceAttempt) {
+			logger::info(
+				"Native marker result: corpse={:X} handle={:X} markerIndex={} added={} nextMarkerIndex={}",
+				corpse.formID,
+				corpse.refHandle,
+				markerIndex,
+				markerAdded,
+				manager->currentMarkerIndex);
+		}
+
+		if (!markerAdded) {
+			continue;
+		}
+
+		const auto targetPosition = markerRef->GetPosition();
+		const auto playerPosition = player->GetPosition();
+		constexpr float twoPi = 6.28318530718F;
+		constexpr float radiansToDegrees = 57.2957795131F;
+		float worldBearing = std::atan2(
+			targetPosition.x - playerPosition.x,
+			targetPosition.y - playerPosition.y);
+		worldBearing = std::fmod(worldBearing, twoPi);
+		if (worldBearing < 0.0F) {
+			worldBearing += twoPi;
+		}
+
+		auto& markerData = manager->scaleformMarkerData[markerIndex];
+		markerData.heading.SetNumber(worldBearing * radiansToDegrees);
+		markerData.alpha.SetNumber(100.0);
+		if (killLootLabelResolved) {
+			markerData.icon.SetString(kKillLootFrameLabel);
+		} else {
+			markerData.icon.SetNumber(static_cast<double>(enemyIconFrame));
+		}
+		markerData.scale.SetNumber(100.0);
+	}
+
+	for (const auto& corpse : invalidCorpses) {
+		CorpseTracker::Get().Forget(corpse.formID, corpse.refHandle);
+		logger::info(
+			"Dropped invalid tracked corpse {:X} (handle {:X})",
+			corpse.formID,
+			corpse.refHandle);
+	}
 }

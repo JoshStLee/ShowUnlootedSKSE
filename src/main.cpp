@@ -27,6 +27,13 @@ public:
             return RE::BSEventNotifyControl::kContinue;
         }
 
+        // Wait for the final death phase before tracking. The earlier dying
+        // phase can occur while the actor is still in a staged death sequence.
+        if (!a_event->dead) {
+            logger::debug("Ignoring dying phase for corpse {:X}", dead->GetFormID());
+            return RE::BSEventNotifyControl::kContinue;
+        }
+
         auto* player = RE::PlayerCharacter::GetSingleton();
         if (!player) {
             return RE::BSEventNotifyControl::kContinue;
@@ -66,7 +73,7 @@ public:
 
         if (CorpseTracker::Get().Add(entry)) {
             logger::info(
-                "Tracked corpse {:X} (handle {:X}) at ({:.1f}, {:.1f}, {:.1f}) — total {}",
+                "Tracked corpse {:X} (handle {:X}) on death phase at ({:.1f}, {:.1f}, {:.1f}) — total {}",
                 entry.formID,
                 entry.refHandle,
                 entry.position.x, entry.position.y, entry.position.z,
