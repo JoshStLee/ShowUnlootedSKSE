@@ -78,8 +78,10 @@ namespace
 
     using CompassUpdateFn = void (*)(RE::HUDObject*);
     CompassUpdateFn originalCompassUpdate = nullptr;
+    std::recursive_mutex compassUpdateMutex;
 
     bool killLootLabelResolved = false;
+    double killLootFrame = 0.0;
 
     bool InvokeGotoAndStop(RE::GFxValue& a_clip, const RE::GFxValue& a_frame)
     {
@@ -97,7 +99,7 @@ namespace
         return true;
     }
 
-    bool ProbeKillLootLabel(RE::GFxMovieView* a_view)
+    bool ProbeKillLootLabel(RE::GFxMovieView* a_view, double& a_resolvedFrame)
     {
         if (!a_view) {
             return false;
@@ -199,6 +201,7 @@ namespace
             resolvedFromOne == resolvedFromTwo &&
             resolvedFromOne > 0.0;
         if (resolved) {
+            a_resolvedFrame = resolvedFromOne;
             logger::info("HUD KillLoot label '{}' resolved to frame {}", kKillLootFrameLabel, resolvedFromOne);
         } else {
             logger::info("HUD KillLoot probe: gotoAndStop('{}') did not resolve a stable frame; using enemy icon frame", kKillLootFrameLabel);
@@ -244,13 +247,18 @@ namespace
 
     void CompassUpdateHook(RE::HUDObject* a_compass)
     {
+        // Crash logs show HUD updates reaching this hook from job/task
+        // threads. Serialize access to the marker manager and Scaleform data
+        // across our injection and the original compass update.
+        std::lock_guard updateLock(compassUpdateMutex);
+
         auto* ui = RE::UI::GetSingleton();
         const bool compassVisible = IsCompassHUDVisible(a_compass, ui);
         static bool probeAttempted = false;
         if (!probeAttempted && compassVisible && ui) {
             auto hudView = ui->GetMovieView(RE::HUDMenu::MENU_NAME);
             if (hudView) {
-                killLootLabelResolved = ProbeKillLootLabel(hudView.get());
+                killLootLabelResolved = ProbeKillLootLabel(hudView.get(), killLootFrame);
                 probeAttempted = true;
             }
         }
@@ -310,8 +318,10 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 		return;
 	}
 
-	static std::vector<TrackedCorpse> corpses;
-	CorpseTracker::Get().GetSnapshotInto(corpses);
+	// This hook can be reached from different HUD update threads. Keep the
+	// snapshot storage local so overlapping calls cannot overwrite each other's
+	// corpse list.
+	auto corpses = CorpseTracker::Get().GetSnapshot();
 	{
 		std::lock_guard lock(markerTraceMutex);
 		loggedMarkerAttempts.erase(
@@ -434,7 +444,7 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 		markerData.heading.SetNumber(worldBearing * radiansToDegrees);
 		markerData.alpha.SetNumber(100.0);
 		if (killLootLabelResolved) {
-			markerData.icon.SetString(kKillLootFrameLabel);
+			markerData.icon.SetNumber(killLootFrame);
 		} else {
 			markerData.icon.SetNumber(static_cast<double>(enemyIconFrame));
 		}
