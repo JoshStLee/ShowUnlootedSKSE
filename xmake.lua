@@ -2,7 +2,7 @@ set_xmakever('3.0.1')
 includes('lib/commonlibsse-ng')
 
 set_project('ShowUnlootedSKSE')
-set_version('1.2.4')
+set_version('1.2.5')
 set_license('GPL-3.0')
 
 set_languages('c++23')

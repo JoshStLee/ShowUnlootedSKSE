@@ -25,6 +25,14 @@ namespace
 
     constexpr const char* kKillLootFrameLabel = "KillLoot";
 
+    // Distances are in Skyrim world units. Shrink corpse markers with distance,
+    // then omit them beyond the display range without fading their alpha.
+    constexpr float kLootMarkerScaleStartDistance = 1024.0F;
+    constexpr float kLootMarkerMinimumScaleDistance = 2048.0F;
+    constexpr float kLootMarkerMaxDistance = 4096.0F;
+    constexpr double kLootMarkerMinimumScale = 100.0;
+    constexpr double kLootMarkerMaximumScale = 112.5;
+
     struct ScaleformMarkerData
     {
         RE::GFxValue heading;
@@ -383,6 +391,39 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 			continue;
 		}
 
+		const auto targetPosition = reference->GetPosition();
+		const auto playerPosition = player->GetPosition();
+		const float dx = targetPosition.x - playerPosition.x;
+		const float dy = targetPosition.y - playerPosition.y;
+		const float dz = targetPosition.z - playerPosition.z;
+		const float distanceSquared = dx * dx + dy * dy + dz * dz;
+		constexpr float maxDistanceSquared = kLootMarkerMaxDistance * kLootMarkerMaxDistance;
+		if (!std::isfinite(distanceSquared) || distanceSquared >= maxDistanceSquared) {
+			// Leave the corpse tracked so its icon can return if the player comes back.
+			continue;
+		}
+
+		const float distance = std::sqrt(distanceSquared);
+		double markerScale;
+		if (distance <= kLootMarkerMinimumScaleDistance) {
+			const float scaleProgress = std::clamp(
+				(distance - kLootMarkerScaleStartDistance) /
+					(kLootMarkerMinimumScaleDistance - kLootMarkerScaleStartDistance),
+				0.0F,
+				1.0F);
+			markerScale = kLootMarkerMaximumScale -
+				static_cast<double>(scaleProgress) *
+					(kLootMarkerMaximumScale - kLootMarkerMinimumScale);
+		} else {
+			const float scaleProgress = std::clamp(
+				(distance - kLootMarkerMinimumScaleDistance) /
+					(kLootMarkerMaxDistance - kLootMarkerMinimumScaleDistance),
+				0.0F,
+				1.0F);
+			markerScale = kLootMarkerMinimumScale *
+				static_cast<double>(1.0F - scaleProgress);
+		}
+
 		const auto markerIndex = manager->currentMarkerIndex;
 		if (markerIndex >= std::size(manager->position)) {
 			if (shouldLogMarkerOnce(markerIndex, corpse.formID, corpse.refHandle)) {
@@ -428,8 +469,6 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 			continue;
 		}
 
-		const auto targetPosition = markerRef->GetPosition();
-		const auto playerPosition = player->GetPosition();
 		constexpr float twoPi = 6.28318530718F;
 		constexpr float radiansToDegrees = 57.2957795131F;
 		float worldBearing = std::atan2(
@@ -448,7 +487,7 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 		} else {
 			markerData.icon.SetNumber(static_cast<double>(enemyIconFrame));
 		}
-		markerData.scale.SetNumber(100.0);
+		markerData.scale.SetNumber(markerScale);
 	}
 
 	for (const auto& corpse : invalidCorpses) {
