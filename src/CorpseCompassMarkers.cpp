@@ -92,6 +92,19 @@ namespace
     bool killLootLabelResolved = false;
     double killLootFrame = 0.0;
 
+    bool ShouldLogCompassIndexOnce(std::string_view a_stage, std::uint32_t a_index)
+    {
+        static std::mutex traceMutex;
+        static std::vector<std::pair<std::string_view, std::uint32_t>> loggedIndices;
+        std::lock_guard lock(traceMutex);
+        const auto seen = std::find(loggedIndices.begin(), loggedIndices.end(), std::pair{ a_stage, a_index });
+        if (seen != loggedIndices.end()) {
+            return false;
+        }
+        loggedIndices.emplace_back(a_stage, a_index);
+        return true;
+    }
+
     bool InvokeGotoAndStop(RE::GFxValue& a_clip, const RE::GFxValue& a_frame)
     {
         return a_clip.Invoke("gotoAndStop", nullptr, &a_frame, 1);
@@ -264,8 +277,28 @@ namespace
         // Let Skyrim finish its normal compass refresh before adding our
         // markers. The marker manager is shared with that update, so writing
         // into it beforehand may leave Skyrim processing a half-updated list.
+        auto* managerBeforeUpdate = GetMarkerManager();
+        const bool traceMarkerUpdate = managerBeforeUpdate && CorpseTracker::Get().Size() > 0;
+        const auto markerIndexBeforeUpdate = traceMarkerUpdate
+            ? managerBeforeUpdate->currentMarkerIndex
+            : 0;
+        if (traceMarkerUpdate && ShouldLogCompassIndexOnce("start", markerIndexBeforeUpdate)) {
+            logger::info("Compass update start: marker index={}", markerIndexBeforeUpdate);
+        }
+
         if (originalCompassUpdate) {
             originalCompassUpdate(a_compass);
+        }
+
+        auto* managerAfterUpdate = GetMarkerManager();
+        if (traceMarkerUpdate && managerAfterUpdate) {
+            const auto markerIndexAfterUpdate = managerAfterUpdate->currentMarkerIndex;
+            if (ShouldLogCompassIndexOnce("end", markerIndexAfterUpdate)) {
+                logger::info(
+                    "Compass update complete: marker index {} -> {}",
+                    markerIndexBeforeUpdate,
+                    markerIndexAfterUpdate);
+            }
         }
 
         auto* ui = RE::UI::GetSingleton();
