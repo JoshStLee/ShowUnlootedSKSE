@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <mutex>
 #include <string_view>
 #include <vector>
@@ -260,6 +261,13 @@ namespace
         // across our injection and the original compass update.
         std::lock_guard updateLock(compassUpdateMutex);
 
+        // Let Skyrim finish its normal compass refresh before adding our
+        // markers. The marker manager is shared with that update, so writing
+        // into it beforehand may leave Skyrim processing a half-updated list.
+        if (originalCompassUpdate) {
+            originalCompassUpdate(a_compass);
+        }
+
         auto* ui = RE::UI::GetSingleton();
         const bool compassVisible = IsCompassHUDVisible(a_compass, ui);
         static bool probeAttempted = false;
@@ -273,9 +281,6 @@ namespace
 
         if (compassVisible) {
             CorpseCompassMarkers::AppendTrackedMarkers();
-        }
-        if (originalCompassUpdate) {
-            originalCompassUpdate(a_compass);
         }
     }
 }
@@ -351,6 +356,9 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 	}
 
 	const auto enemyIconFrame = static_cast<std::int32_t>(frameOffsets->enemy);
+	const double corpseIconFrame = killLootLabelResolved
+		? killLootFrame
+		: static_cast<double>(enemyIconFrame);
 
 	for (const auto& corpse : corpses) {
 		if (corpse.looted) {
@@ -374,8 +382,7 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 			continue;
 		}
 
-		// CTD path: Orc FF002D76 had ParentCell --- after QuickLoot re-track.
-		// Native AddMarker dec's through garbage when the ref is detached.
+		// A reference without a parent cell cannot be passed to the native marker routine.
 		if (!reference->GetParentCell()) {
 			invalidCorpses.push_back(corpse);
 			continue;
@@ -438,28 +445,32 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 		}
 
 		const bool traceAttempt = shouldLogMarkerOnce(markerIndex, corpse.formID, corpse.refHandle);
+		auto* markerDataSlot = &manager->scaleformMarkerData[markerIndex];
+		auto* markerPosition = &manager->position[markerIndex];
 		if (traceAttempt) {
 			logger::info(
-				"Native marker attempt: corpse={:X} handle={:X} markerIndex={} cell={:X} reference={:p}",
+				"AddMarker attempt: corpse={:X} handle={:X} cell={:X} index={} "
+				"distance={:.0f} scale={:.1f} iconFrame={:.0f}",
 				corpse.formID,
 				corpse.refHandle,
-				markerIndex,
 				reference->GetParentCell()->GetFormID(),
-				static_cast<const void*>(reference));
+				markerIndex,
+				distance,
+				markerScale,
+				corpseIconFrame);
 		}
 
 		const bool markerAdded = AddMarker(
 			manager,
-			&manager->scaleformMarkerData[markerIndex],
-			&manager->position[markerIndex],
+			markerDataSlot,
+			markerPosition,
 			corpse.refHandle,
 			enemyIconFrame);
 
 		if (traceAttempt) {
 			logger::info(
-				"Native marker result: corpse={:X} handle={:X} markerIndex={} added={} nextMarkerIndex={}",
+				"AddMarker result: corpse={:X} index={} added={} nextIndex={}",
 				corpse.formID,
-				corpse.refHandle,
 				markerIndex,
 				markerAdded,
 				manager->currentMarkerIndex);
@@ -482,11 +493,7 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 		auto& markerData = manager->scaleformMarkerData[markerIndex];
 		markerData.heading.SetNumber(worldBearing * radiansToDegrees);
 		markerData.alpha.SetNumber(100.0);
-		if (killLootLabelResolved) {
-			markerData.icon.SetNumber(killLootFrame);
-		} else {
-			markerData.icon.SetNumber(static_cast<double>(enemyIconFrame));
-		}
+		markerData.icon.SetNumber(corpseIconFrame);
 		markerData.scale.SetNumber(markerScale);
 	}
 
