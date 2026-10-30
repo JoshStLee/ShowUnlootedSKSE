@@ -4,9 +4,11 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <mutex>
 #include <string_view>
 #include <vector>
@@ -28,11 +30,11 @@ namespace
 
     // Distances are in Skyrim world units. Shrink corpse markers with distance,
     // then omit them beyond the display range without fading their alpha.
-    constexpr float kLootMarkerScaleStartDistance = 1024.0F;
-    constexpr float kLootMarkerMinimumScaleDistance = 2048.0F;
+    constexpr float kLootMarkerScaleStartDistance = 1536.0F;
+    constexpr float kLootMarkerMinimumScaleDistance = 3072.0F;
     constexpr float kLootMarkerMaxDistance = 4096.0F;
-    constexpr double kLootMarkerMinimumScale = 100.0;
-    constexpr double kLootMarkerMaximumScale = 112.5;
+    constexpr double kLootMarkerMinimumScale = 75.0;
+    constexpr double kLootMarkerMaximumScale = 100.0;
 
     struct ScaleformMarkerData
     {
@@ -42,6 +44,76 @@ namespace
         RE::GFxValue scale;
     };
     static_assert(sizeof(ScaleformMarkerData) == 0x60);
+
+    struct RawGFxValueSnapshot
+    {
+        std::uintptr_t objectInterface;
+        std::uint32_t type;
+        std::uint32_t padding;
+        std::uint64_t value;
+    };
+    static_assert(sizeof(RawGFxValueSnapshot) == sizeof(RE::GFxValue));
+
+    RawGFxValueSnapshot SnapshotGFxValue(const RE::GFxValue& a_value)
+    {
+        RawGFxValueSnapshot snapshot{};
+        std::memcpy(&snapshot, &a_value, sizeof(snapshot));
+        return snapshot;
+    }
+
+    void LogMarkerSlotSnapshot(
+        std::uint32_t a_markerIndex,
+        std::string_view a_stage,
+        const ScaleformMarkerData& a_markerData)
+    {
+        const auto heading = SnapshotGFxValue(a_markerData.heading);
+        const auto alpha = SnapshotGFxValue(a_markerData.alpha);
+        const auto icon = SnapshotGFxValue(a_markerData.icon);
+        const auto scale = SnapshotGFxValue(a_markerData.scale);
+        logger::info(
+            "Marker slot {} GFx {} AddMarker (raw): "
+            "heading={:p}/{:08X}/{:016X} alpha={:p}/{:08X}/{:016X} "
+            "icon={:p}/{:08X}/{:016X} scale={:p}/{:08X}/{:016X}",
+            a_markerIndex,
+            a_stage,
+            reinterpret_cast<const void*>(heading.objectInterface), heading.type, heading.value,
+            reinterpret_cast<const void*>(alpha.objectInterface), alpha.type, alpha.value,
+            reinterpret_cast<const void*>(icon.objectInterface), icon.type, icon.value,
+            reinterpret_cast<const void*>(scale.objectInterface), scale.type, scale.value);
+    }
+
+    double CalculateMarkerScale(float a_distance)
+    {
+        if (a_distance <= kLootMarkerMinimumScaleDistance) {
+            const float scaleProgress = std::clamp(
+                (a_distance - kLootMarkerScaleStartDistance) /
+                    (kLootMarkerMinimumScaleDistance - kLootMarkerScaleStartDistance),
+                0.0F,
+                1.0F);
+            return kLootMarkerMaximumScale -
+                static_cast<double>(scaleProgress) *
+                    (kLootMarkerMaximumScale - kLootMarkerMinimumScale);
+        }
+
+        const float scaleProgress = std::clamp(
+            (a_distance - kLootMarkerMinimumScaleDistance) /
+                (kLootMarkerMaxDistance - kLootMarkerMinimumScaleDistance),
+            0.0F,
+            1.0F);
+        return kLootMarkerMinimumScale * static_cast<double>(1.0F - scaleProgress);
+    }
+
+    float CalculateWorldBearingDegrees(const RE::NiPoint3& a_target, const RE::NiPoint3& a_player)
+    {
+        constexpr float twoPi = 6.28318530718F;
+        constexpr float radiansToDegrees = 57.2957795131F;
+        float worldBearing = std::atan2(a_target.x - a_player.x, a_target.y - a_player.y);
+        worldBearing = std::fmod(worldBearing, twoPi);
+        if (worldBearing < 0.0F) {
+            worldBearing += twoPi;
+        }
+        return worldBearing * radiansToDegrees;
+    }
 
     struct EngineHUDMarkerManager
     {
@@ -274,9 +346,7 @@ namespace
         // across our injection and the original compass update.
         std::lock_guard updateLock(compassUpdateMutex);
 
-        // Let Skyrim finish its normal compass refresh before adding our
-        // markers. The marker manager is shared with that update, so writing
-        // into it beforehand may leave Skyrim processing a half-updated list.
+        // Capture the marker index at the start of the refresh for the crash trace.
         auto* managerBeforeUpdate = GetMarkerManager();
         const bool traceMarkerUpdate = managerBeforeUpdate && CorpseTracker::Get().Size() > 0;
         const auto markerIndexBeforeUpdate = traceMarkerUpdate
@@ -284,21 +354,6 @@ namespace
             : 0;
         if (traceMarkerUpdate && ShouldLogCompassIndexOnce("start", markerIndexBeforeUpdate)) {
             logger::info("Compass update start: marker index={}", markerIndexBeforeUpdate);
-        }
-
-        if (originalCompassUpdate) {
-            originalCompassUpdate(a_compass);
-        }
-
-        auto* managerAfterUpdate = GetMarkerManager();
-        if (traceMarkerUpdate && managerAfterUpdate) {
-            const auto markerIndexAfterUpdate = managerAfterUpdate->currentMarkerIndex;
-            if (ShouldLogCompassIndexOnce("end", markerIndexAfterUpdate)) {
-                logger::info(
-                    "Compass update complete: marker index {} -> {}",
-                    markerIndexBeforeUpdate,
-                    markerIndexAfterUpdate);
-            }
         }
 
         auto* ui = RE::UI::GetSingleton();
@@ -314,6 +369,23 @@ namespace
 
         if (compassVisible) {
             CorpseCompassMarkers::AppendTrackedMarkers();
+        }
+
+        // Append markers before Skyrim finishes the compass update so its HUD
+        // refresh can consume the updated marker list.
+        if (originalCompassUpdate) {
+            originalCompassUpdate(a_compass);
+        }
+
+        auto* managerAfterUpdate = GetMarkerManager();
+        if (traceMarkerUpdate && managerAfterUpdate) {
+            const auto markerIndexAfterUpdate = managerAfterUpdate->currentMarkerIndex;
+            if (ShouldLogCompassIndexOnce("end", markerIndexAfterUpdate)) {
+                logger::info(
+                    "Compass update complete: marker index {} -> {}",
+                    markerIndexBeforeUpdate,
+                    markerIndexAfterUpdate);
+            }
         }
     }
 }
@@ -340,21 +412,31 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 		std::uint32_t markerIndex;
 		RE::FormID formID;
 		RE::RefHandle refHandle;
+		std::chrono::steady_clock::time_point lastLogged;
+		std::uint64_t loggedAttempts;
 	};
 	static std::vector<MarkerTraceKey> loggedMarkerAttempts;
 	static std::mutex markerTraceMutex;
-	const auto shouldLogMarkerOnce = [&](std::uint32_t markerIndex, RE::FormID formID, RE::RefHandle refHandle) {
+	constexpr auto kMarkerAttemptLogCooldown = std::chrono::seconds(1);
+	const auto shouldLogMarkerAttempt = [&](std::uint32_t markerIndex, RE::FormID formID, RE::RefHandle refHandle, std::uint64_t& loggedAttempt) {
 		std::lock_guard lock(markerTraceMutex);
-		const auto alreadyLogged = std::find_if(
+		const auto now = std::chrono::steady_clock::now();
+		const auto existing = std::find_if(
 			loggedMarkerAttempts.begin(),
 			loggedMarkerAttempts.end(),
 			[&](const MarkerTraceKey& key) {
 				return key.markerIndex == markerIndex && key.formID == formID && key.refHandle == refHandle;
 			});
-		if (alreadyLogged != loggedMarkerAttempts.end()) {
-			return false;
+		if (existing != loggedMarkerAttempts.end()) {
+			if (now - existing->lastLogged < kMarkerAttemptLogCooldown) {
+				return false;
+			}
+			existing->lastLogged = now;
+			loggedAttempt = ++existing->loggedAttempts;
+			return true;
 		}
-		loggedMarkerAttempts.push_back({ markerIndex, formID, refHandle });
+		loggedMarkerAttempts.push_back({ markerIndex, formID, refHandle, now, 1 });
+		loggedAttempt = 1;
 		return true;
 	};
 
@@ -444,31 +526,15 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 		}
 
 		const float distance = std::sqrt(distanceSquared);
-		double markerScale;
-		if (distance <= kLootMarkerMinimumScaleDistance) {
-			const float scaleProgress = std::clamp(
-				(distance - kLootMarkerScaleStartDistance) /
-					(kLootMarkerMinimumScaleDistance - kLootMarkerScaleStartDistance),
-				0.0F,
-				1.0F);
-			markerScale = kLootMarkerMaximumScale -
-				static_cast<double>(scaleProgress) *
-					(kLootMarkerMaximumScale - kLootMarkerMinimumScale);
-		} else {
-			const float scaleProgress = std::clamp(
-				(distance - kLootMarkerMinimumScaleDistance) /
-					(kLootMarkerMaxDistance - kLootMarkerMinimumScaleDistance),
-				0.0F,
-				1.0F);
-			markerScale = kLootMarkerMinimumScale *
-				static_cast<double>(1.0F - scaleProgress);
-		}
+		const double markerScale = CalculateMarkerScale(distance);
 
 		const auto markerIndex = manager->currentMarkerIndex;
 		if (markerIndex >= std::size(manager->position)) {
-			if (shouldLogMarkerOnce(markerIndex, corpse.formID, corpse.refHandle)) {
+			std::uint64_t loggedAttempt = 0;
+			if (shouldLogMarkerAttempt(markerIndex, corpse.formID, corpse.refHandle, loggedAttempt)) {
 				logger::warn(
-					"Skipping corpse marker {:X} (handle {:X}): marker index {} exceeds capacity {}",
+					"Skipping corpse marker attempt={} {:X} (handle {:X}): marker index {} exceeds capacity {}",
+					loggedAttempt,
 					corpse.formID,
 					corpse.refHandle,
 					markerIndex,
@@ -477,13 +543,15 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 			break;
 		}
 
-		const bool traceAttempt = shouldLogMarkerOnce(markerIndex, corpse.formID, corpse.refHandle);
+		std::uint64_t loggedAttempt = 0;
+		const bool traceAttempt = shouldLogMarkerAttempt(markerIndex, corpse.formID, corpse.refHandle, loggedAttempt);
 		auto* markerDataSlot = &manager->scaleformMarkerData[markerIndex];
 		auto* markerPosition = &manager->position[markerIndex];
 		if (traceAttempt) {
 			logger::info(
-				"AddMarker attempt: corpse={:X} handle={:X} cell={:X} index={} "
+				"AddMarker attempt={} corpse={:X} handle={:X} cell={:X} index={} "
 				"distance={:.0f} scale={:.1f} iconFrame={:.0f}",
+				loggedAttempt,
 				corpse.formID,
 				corpse.refHandle,
 				reference->GetParentCell()->GetFormID(),
@@ -491,6 +559,9 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 				distance,
 				markerScale,
 				corpseIconFrame);
+            if (markerIndex >= 24 && markerIndex <= 32) {
+                LogMarkerSlotSnapshot(markerIndex, "before", *markerDataSlot);
+			}
 		}
 
 		const bool markerAdded = AddMarker(
@@ -502,29 +573,23 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 
 		if (traceAttempt) {
 			logger::info(
-				"AddMarker result: corpse={:X} index={} added={} nextIndex={}",
+				"AddMarker result attempt={} corpse={:X} index={} added={} nextIndex={}",
+				loggedAttempt,
 				corpse.formID,
 				markerIndex,
 				markerAdded,
 				manager->currentMarkerIndex);
+            if (markerIndex >= 24 && markerIndex <= 32) {
+                LogMarkerSlotSnapshot(markerIndex, "after", *markerDataSlot);
+			}
 		}
 
 		if (!markerAdded) {
 			continue;
 		}
 
-		constexpr float twoPi = 6.28318530718F;
-		constexpr float radiansToDegrees = 57.2957795131F;
-		float worldBearing = std::atan2(
-			targetPosition.x - playerPosition.x,
-			targetPosition.y - playerPosition.y);
-		worldBearing = std::fmod(worldBearing, twoPi);
-		if (worldBearing < 0.0F) {
-			worldBearing += twoPi;
-		}
-
 		auto& markerData = manager->scaleformMarkerData[markerIndex];
-		markerData.heading.SetNumber(worldBearing * radiansToDegrees);
+		markerData.heading.SetNumber(CalculateWorldBearingDegrees(targetPosition, playerPosition));
 		markerData.alpha.SetNumber(100.0);
 		markerData.icon.SetNumber(corpseIconFrame);
 		markerData.scale.SetNumber(markerScale);

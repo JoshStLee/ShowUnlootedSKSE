@@ -6,7 +6,7 @@
         ["cmake#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "ef2a1792c20dd04846a83267ae5ce7889797ff5e",
+                commit = "ae88fa69ee5a39961bf5411d4162d1cbcefd5e0f",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "4.4.4"
@@ -22,7 +22,7 @@
         ["directxtk#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "ae88fa69ee5a39961bf5411d4162d1cbcefd5e0f",
+                commit = "1c4a5226d098031c7980196c162975781e1627cd",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "24.2.0"
@@ -30,7 +30,7 @@
         ["ninja#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "ef2a1792c20dd04846a83267ae5ce7889797ff5e",
+                commit = "ae88fa69ee5a39961bf5411d4162d1cbcefd5e0f",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "1.12.1"
