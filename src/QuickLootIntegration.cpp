@@ -20,10 +20,7 @@ namespace
         }
 
         const auto formID = reference->GetFormID();
-        const bool trackedCorpse = CorpseTracker::Get().SetLooted(formID);
-        if (trackedCorpse) {
-            logger::info("QuickLootIE opened tracked corpse {:X} — tracker entry removed", formID);
-        }
+        CorpseTracker::Get().SetLooted(formID);
     }
 }
 

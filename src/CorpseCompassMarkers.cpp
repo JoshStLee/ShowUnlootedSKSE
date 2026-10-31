@@ -2,16 +2,22 @@
 #include "CorpseCompassMarkers.h"
 #include "CorpseTracker.h"
 
+#include <RE/M/MessageBoxMenu.h>
+
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <mutex>
+#include <optional>
 #include <string_view>
 #include <vector>
+
+// Set to 1 for a diagnostic build that logs every AddMarker call. This is
+// intentionally disabled during normal gameplay because it is very verbose.
+#define SHOW_UNLOOTED_MARKER_DIAGNOSTICS 0
 
 namespace
 {
@@ -45,6 +51,9 @@ namespace
     };
     static_assert(sizeof(ScaleformMarkerData) == 0x60);
 
+#if SHOW_UNLOOTED_MARKER_DIAGNOSTICS
+    // Logging-only byte copy. Never reconstruct a GFxValue from this snapshot
+    // or release any pointer stored in it; ownership remains with the source.
     struct RawGFxValueSnapshot
     {
         std::uintptr_t objectInterface;
@@ -81,6 +90,7 @@ namespace
             reinterpret_cast<const void*>(icon.objectInterface), icon.type, icon.value,
             reinterpret_cast<const void*>(scale.objectInterface), scale.type, scale.value);
     }
+#endif
 
     double CalculateMarkerScale(float a_distance)
     {
@@ -117,6 +127,9 @@ namespace
 
     struct EngineHUDMarkerManager
     {
+        // These counts mirror the engine layout. AddMarker needs a position
+        // and marker-data slot, so the 48 positions cap usable marker indices;
+        // the extra marker-data entry does not make index 48 valid.
         ScaleformMarkerData scaleformMarkerData[49];
         RE::NiPoint3 position[48];
         RE::BSTArray<RE::RefHandle> locationRefs;
@@ -161,21 +174,7 @@ namespace
     CompassUpdateFn originalCompassUpdate = nullptr;
     std::recursive_mutex compassUpdateMutex;
 
-    bool killLootLabelResolved = false;
-    double killLootFrame = 0.0;
-
-    bool ShouldLogCompassIndexOnce(std::string_view a_stage, std::uint32_t a_index)
-    {
-        static std::mutex traceMutex;
-        static std::vector<std::pair<std::string_view, std::uint32_t>> loggedIndices;
-        std::lock_guard lock(traceMutex);
-        const auto seen = std::find(loggedIndices.begin(), loggedIndices.end(), std::pair{ a_stage, a_index });
-        if (seen != loggedIndices.end()) {
-            return false;
-        }
-        loggedIndices.emplace_back(a_stage, a_index);
-        return true;
-    }
+    std::optional<double> killLootFrame;
 
     bool InvokeGotoAndStop(RE::GFxValue& a_clip, const RE::GFxValue& a_frame)
     {
@@ -193,10 +192,10 @@ namespace
         return true;
     }
 
-    bool ProbeKillLootLabel(RE::GFxMovieView* a_view, double& a_resolvedFrame)
+    std::optional<double> ProbeKillLootLabel(RE::GFxMovieView* a_view)
     {
         if (!a_view) {
-            return false;
+            return std::nullopt;
         }
 
         RE::GFxValue compassRect;
@@ -212,13 +211,13 @@ namespace
         }
         if (!compassRect.IsDisplayObject()) {
             logger::info("HUD KillLoot probe: DirectionRect not found; using enemy icon frame");
-            return false;
+            return std::nullopt;
         }
 
         RE::GFxValue depth;
         if (!compassRect.Invoke("getNextHighestDepth", &depth, nullptr, 0) || !depth.IsNumber()) {
             logger::info("HUD KillLoot probe: getNextHighestDepth failed; using enemy icon frame");
-            return false;
+            return std::nullopt;
         }
 
         RE::GFxValue attachArgs[3];
@@ -228,7 +227,7 @@ namespace
         RE::GFxValue probeClip;
         if (!compassRect.Invoke("attachMovie", &probeClip, attachArgs, 3) || !probeClip.IsDisplayObject()) {
             logger::info("HUD KillLoot probe: attachMovie('Compass Marker') failed; using enemy icon frame");
-            return false;
+            return std::nullopt;
         }
 
         RE::GFxValue hidden;
@@ -295,18 +294,19 @@ namespace
             resolvedFromOne == resolvedFromTwo &&
             resolvedFromOne > 0.0;
         if (resolved) {
-            a_resolvedFrame = resolvedFromOne;
             logger::info("HUD KillLoot label '{}' resolved to frame {}", kKillLootFrameLabel, resolvedFromOne);
+            return resolvedFromOne;
         } else {
             logger::info("HUD KillLoot probe: gotoAndStop('{}') did not resolve a stable frame; using enemy icon frame", kKillLootFrameLabel);
+            return std::nullopt;
         }
-        return resolved;
     }
 
     bool IsCompassHUDVisible(RE::HUDObject* a_compass, RE::UI* a_ui)
     {
         if (!a_compass || !a_compass->view || !a_ui ||
             a_ui->IsMenuOpen(RE::JournalMenu::MENU_NAME) ||
+            a_ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME) ||
             a_ui->IsMenuOpen(RE::LockpickingMenu::MENU_NAME)) {
             return false;
         }
@@ -343,26 +343,19 @@ namespace
     {
         // Crash logs show HUD updates reaching this hook from job/task
         // threads. Serialize access to the marker manager and Scaleform data
-        // across our injection and the original compass update.
+        // across our injection and the original compass update. This lock also
+        // protects the one-shot probe state and cached frame below.
         std::lock_guard updateLock(compassUpdateMutex);
-
-        // Capture the marker index at the start of the refresh for the crash trace.
-        auto* managerBeforeUpdate = GetMarkerManager();
-        const bool traceMarkerUpdate = managerBeforeUpdate && CorpseTracker::Get().Size() > 0;
-        const auto markerIndexBeforeUpdate = traceMarkerUpdate
-            ? managerBeforeUpdate->currentMarkerIndex
-            : 0;
-        if (traceMarkerUpdate && ShouldLogCompassIndexOnce("start", markerIndexBeforeUpdate)) {
-            logger::info("Compass update start: marker index={}", markerIndexBeforeUpdate);
-        }
 
         auto* ui = RE::UI::GetSingleton();
         const bool compassVisible = IsCompassHUDVisible(a_compass, ui);
+        // Access is serialized by compassUpdateMutex above; keep the flag and
+        // cached optional frame under that same lock.
         static bool probeAttempted = false;
         if (!probeAttempted && compassVisible && ui) {
             auto hudView = ui->GetMovieView(RE::HUDMenu::MENU_NAME);
             if (hudView) {
-                killLootLabelResolved = ProbeKillLootLabel(hudView.get(), killLootFrame);
+                killLootFrame = ProbeKillLootLabel(hudView.get());
                 probeAttempted = true;
             }
         }
@@ -377,16 +370,6 @@ namespace
             originalCompassUpdate(a_compass);
         }
 
-        auto* managerAfterUpdate = GetMarkerManager();
-        if (traceMarkerUpdate && managerAfterUpdate) {
-            const auto markerIndexAfterUpdate = managerAfterUpdate->currentMarkerIndex;
-            if (ShouldLogCompassIndexOnce("end", markerIndexAfterUpdate)) {
-                logger::info(
-                    "Compass update complete: marker index {} -> {}",
-                    markerIndexBeforeUpdate,
-                    markerIndexAfterUpdate);
-            }
-        }
     }
 }
 
@@ -407,39 +390,6 @@ void CorpseCompassMarkers::InstallHook()
 
 void CorpseCompassMarkers::AppendTrackedMarkers()
 {
-	struct MarkerTraceKey
-	{
-		std::uint32_t markerIndex;
-		RE::FormID formID;
-		RE::RefHandle refHandle;
-		std::chrono::steady_clock::time_point lastLogged;
-		std::uint64_t loggedAttempts;
-	};
-	static std::vector<MarkerTraceKey> loggedMarkerAttempts;
-	static std::mutex markerTraceMutex;
-	constexpr auto kMarkerAttemptLogCooldown = std::chrono::seconds(1);
-	const auto shouldLogMarkerAttempt = [&](std::uint32_t markerIndex, RE::FormID formID, RE::RefHandle refHandle, std::uint64_t& loggedAttempt) {
-		std::lock_guard lock(markerTraceMutex);
-		const auto now = std::chrono::steady_clock::now();
-		const auto existing = std::find_if(
-			loggedMarkerAttempts.begin(),
-			loggedMarkerAttempts.end(),
-			[&](const MarkerTraceKey& key) {
-				return key.markerIndex == markerIndex && key.formID == formID && key.refHandle == refHandle;
-			});
-		if (existing != loggedMarkerAttempts.end()) {
-			if (now - existing->lastLogged < kMarkerAttemptLogCooldown) {
-				return false;
-			}
-			existing->lastLogged = now;
-			loggedAttempt = ++existing->loggedAttempts;
-			return true;
-		}
-		loggedMarkerAttempts.push_back({ markerIndex, formID, refHandle, now, 1 });
-		loggedAttempt = 1;
-		return true;
-	};
-
 	auto* manager = GetMarkerManager();
 	auto* frameOffsets = GetMarkerFrameOffsets();
 	if (!manager || !frameOffsets) {
@@ -450,19 +400,6 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 	// snapshot storage local so overlapping calls cannot overwrite each other's
 	// corpse list.
 	auto corpses = CorpseTracker::Get().GetSnapshot();
-	{
-		std::lock_guard lock(markerTraceMutex);
-		loggedMarkerAttempts.erase(
-			std::remove_if(
-				loggedMarkerAttempts.begin(),
-				loggedMarkerAttempts.end(),
-				[&](const MarkerTraceKey& key) {
-					return std::none_of(corpses.begin(), corpses.end(), [&](const TrackedCorpse& corpse) {
-						return corpse.formID == key.formID && corpse.refHandle == key.refHandle;
-					});
-				}),
-			loggedMarkerAttempts.end());
-	}
 	std::vector<TrackedCorpse> invalidCorpses;
 
 	auto* player = RE::PlayerCharacter::GetSingleton();
@@ -471,9 +408,7 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 	}
 
 	const auto enemyIconFrame = static_cast<std::int32_t>(frameOffsets->enemy);
-	const double corpseIconFrame = killLootLabelResolved
-		? killLootFrame
-		: static_cast<double>(enemyIconFrame);
+	const double corpseIconFrame = killLootFrame.value_or(static_cast<double>(enemyIconFrame));
 
 	for (const auto& corpse : corpses) {
 		if (corpse.looted) {
@@ -530,40 +465,24 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 
 		const auto markerIndex = manager->currentMarkerIndex;
 		if (markerIndex >= std::size(manager->position)) {
-			std::uint64_t loggedAttempt = 0;
-			if (shouldLogMarkerAttempt(markerIndex, corpse.formID, corpse.refHandle, loggedAttempt)) {
-				logger::warn(
-					"Skipping corpse marker attempt={} {:X} (handle {:X}): marker index {} exceeds capacity {}",
-					loggedAttempt,
-					corpse.formID,
-					corpse.refHandle,
-					markerIndex,
-					std::size(manager->position));
-			}
 			break;
 		}
 
-		std::uint64_t loggedAttempt = 0;
-		const bool traceAttempt = shouldLogMarkerAttempt(markerIndex, corpse.formID, corpse.refHandle, loggedAttempt);
 		auto* markerDataSlot = &manager->scaleformMarkerData[markerIndex];
 		auto* markerPosition = &manager->position[markerIndex];
-		if (traceAttempt) {
-			logger::info(
-				"AddMarker attempt={} corpse={:X} handle={:X} cell={:X} index={} "
-				"distance={:.0f} scale={:.1f} iconFrame={:.0f}",
-				loggedAttempt,
-				corpse.formID,
-				corpse.refHandle,
-				reference->GetParentCell()->GetFormID(),
-				markerIndex,
-				distance,
-				markerScale,
-				corpseIconFrame);
-            if (markerIndex >= 24 && markerIndex <= 32) {
-                LogMarkerSlotSnapshot(markerIndex, "before", *markerDataSlot);
-			}
-		}
-
+#if SHOW_UNLOOTED_MARKER_DIAGNOSTICS
+		logger::info(
+			"AddMarker attempt: corpse={:X} handle={:X} cell={:X} index={} "
+			"distance={:.0f} scale={:.1f} iconFrame={:.0f}",
+			corpse.formID,
+			corpse.refHandle,
+			reference->GetParentCell()->GetFormID(),
+			markerIndex,
+			distance,
+			markerScale,
+			corpseIconFrame);
+		LogMarkerSlotSnapshot(markerIndex, "before", *markerDataSlot);
+#endif
 		const bool markerAdded = AddMarker(
 			manager,
 			markerDataSlot,
@@ -571,18 +490,15 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 			corpse.refHandle,
 			enemyIconFrame);
 
-		if (traceAttempt) {
-			logger::info(
-				"AddMarker result attempt={} corpse={:X} index={} added={} nextIndex={}",
-				loggedAttempt,
-				corpse.formID,
-				markerIndex,
-				markerAdded,
-				manager->currentMarkerIndex);
-            if (markerIndex >= 24 && markerIndex <= 32) {
-                LogMarkerSlotSnapshot(markerIndex, "after", *markerDataSlot);
-			}
-		}
+#if SHOW_UNLOOTED_MARKER_DIAGNOSTICS
+		logger::info(
+			"AddMarker result: corpse={:X} index={} added={} nextIndex={}",
+			corpse.formID,
+			markerIndex,
+			markerAdded,
+			manager->currentMarkerIndex);
+		LogMarkerSlotSnapshot(markerIndex, "after", *markerDataSlot);
+#endif
 
 		if (!markerAdded) {
 			continue;
@@ -597,9 +513,5 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 
 	for (const auto& corpse : invalidCorpses) {
 		CorpseTracker::Get().Forget(corpse.formID, corpse.refHandle);
-		logger::info(
-			"Dropped invalid tracked corpse {:X} (handle {:X})",
-			corpse.formID,
-			corpse.refHandle);
 	}
 }

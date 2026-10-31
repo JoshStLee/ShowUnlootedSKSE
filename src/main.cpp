@@ -30,7 +30,6 @@ public:
         // Wait for the final death phase before tracking. The earlier dying
         // phase can occur while the actor is still in a staged death sequence.
         if (!a_event->dead) {
-            logger::debug("Ignoring dying phase for corpse {:X}", dead->GetFormID());
             return RE::BSEventNotifyControl::kContinue;
         }
 
@@ -54,14 +53,6 @@ public:
             return RE::BSEventNotifyControl::kContinue;
         }
 
-        // const char* name = dead->GetDisplayFullName();
-        // logger::info("Death: {} (killer: {})",
-        //     name ? name : "<no name>",
-        //     killer && killer->GetDisplayFullName() ? killer->GetDisplayFullName() : "none");
-
-        // RE::DebugNotification(
-        //     std::format("Killed: {}", name ? name : "something").c_str());
-
         TrackedCorpse entry;
         entry.formID    = dead->GetFormID();
         RE::CreateRefHandle(entry.refHandle, dead);
@@ -71,16 +62,7 @@ public:
                               : 0.0f;
         entry.looted    = false;
 
-        if (CorpseTracker::Get().Add(entry)) {
-            logger::info(
-                "Tracked corpse {:X} (handle {:X}) on death phase at ({:.1f}, {:.1f}, {:.1f}) — total {}",
-                entry.formID,
-                entry.refHandle,
-                entry.position.x, entry.position.y, entry.position.z,
-                CorpseTracker::Get().Size());
-        } else {
-            logger::debug("Corpse {:X} already tracked, skipped", entry.formID);
-        }
+        CorpseTracker::Get().Add(entry);
 
         return RE::BSEventNotifyControl::kContinue;
     }
@@ -109,8 +91,8 @@ class ActivateHandler : public RE::BSTEventSink<RE::TESActivateEvent>
             // objectActivated is the target; actionRef is the actor performing
             // the activation. Only the target should be marked as looted.
             auto* activated = a_event->objectActivated.get();
-            if (activated && CorpseTracker::Get().SetLooted(activated->GetFormID())) {
-                logger::info("Corpse {:X} activated — marker cleared", activated->GetFormID());
+            if (activated) {
+                CorpseTracker::Get().SetLooted(activated->GetFormID());
             }
 
             return RE::BSEventNotifyControl::kContinue;
