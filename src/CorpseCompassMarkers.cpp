@@ -3,9 +3,11 @@
 #include "CorpseTracker.h"
 
 #include <RE/M/MessageBoxMenu.h>
+#include <RE/S/StatsMenu.h>
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -15,9 +17,9 @@
 #include <string_view>
 #include <vector>
 
-// Set to 1 for a diagnostic build that logs every AddMarker call. This is
-// intentionally disabled during normal gameplay because it is very verbose.
-#define SHOW_UNLOOTED_MARKER_DIAGNOSTICS 0
+// Diagnostic build: log the first AddMarker slot snapshot per corpse, then at
+// most once every two seconds while it remains tracked.
+#define SHOW_UNLOOTED_MARKER_DIAGNOSTICS 1
 
 namespace
 {
@@ -52,6 +54,8 @@ namespace
     static_assert(sizeof(ScaleformMarkerData) == 0x60);
 
 #if SHOW_UNLOOTED_MARKER_DIAGNOSTICS
+    struct EngineHUDMarkerManager;
+
     // Logging-only byte copy. Never reconstruct a GFxValue from this snapshot
     // or release any pointer stored in it; ownership remains with the source.
     struct RawGFxValueSnapshot
@@ -70,21 +74,97 @@ namespace
         return snapshot;
     }
 
-    void LogMarkerSlotSnapshot(
-        std::uint32_t a_markerIndex,
-        std::string_view a_stage,
-        const ScaleformMarkerData& a_markerData)
+    struct MarkerDiagnosticTrace
     {
-        const auto heading = SnapshotGFxValue(a_markerData.heading);
-        const auto alpha = SnapshotGFxValue(a_markerData.alpha);
-        const auto icon = SnapshotGFxValue(a_markerData.icon);
-        const auto scale = SnapshotGFxValue(a_markerData.scale);
+        RE::FormID formID;
+        RE::RefHandle refHandle;
+        std::chrono::steady_clock::time_point lastLogged;
+    };
+
+    bool ShouldLogMarkerDiagnostic(
+        RE::FormID a_formID,
+        RE::RefHandle a_refHandle,
+        std::vector<MarkerDiagnosticTrace>& a_traces,
+        std::mutex& a_mutex)
+    {
+        std::lock_guard lock(a_mutex);
+        const auto now = std::chrono::steady_clock::now();
+        const auto existing = std::find_if(
+            a_traces.begin(),
+            a_traces.end(),
+            [&](const MarkerDiagnosticTrace& a_trace) {
+                return a_trace.formID == a_formID && a_trace.refHandle == a_refHandle;
+            });
+        if (existing == a_traces.end()) {
+            a_traces.push_back({ a_formID, a_refHandle, now });
+            return true;
+        }
+
+        constexpr auto kMarkerDiagnosticInterval = std::chrono::seconds(2);
+        if (now - existing->lastLogged < kMarkerDiagnosticInterval) {
+            return false;
+        }
+
+        existing->lastLogged = now;
+        return true;
+    }
+
+    void LogMarkerAttemptSnapshot(
+        RE::FormID a_formID,
+        RE::RefHandle a_refHandle,
+        RE::FormID a_cellFormID,
+        std::uint32_t a_markerIndex,
+        float a_distance,
+        double a_markerScale,
+        double a_corpseIconFrame,
+        std::int32_t a_passedIconFrame,
+        const EngineHUDMarkerManager* a_manager,
+        const ScaleformMarkerData* a_markerData,
+        const RE::NiPoint3* a_markerPosition,
+        const RE::NiPoint3& a_targetPosition)
+    {
+        const auto managerAddress = reinterpret_cast<std::uintptr_t>(a_manager);
+        const auto markerDataAddress = reinterpret_cast<std::uintptr_t>(a_markerData);
+        const auto markerPositionAddress = reinterpret_cast<std::uintptr_t>(a_markerPosition);
+        const auto markerDataOffset = markerDataAddress - managerAddress;
+        const auto markerPositionOffset = markerPositionAddress - managerAddress;
+        const auto expectedMarkerDataOffset = static_cast<std::uintptr_t>(a_markerIndex) * sizeof(ScaleformMarkerData);
+        const auto expectedMarkerPositionOffset =
+            sizeof(ScaleformMarkerData) * 49 + static_cast<std::uintptr_t>(a_markerIndex) * sizeof(RE::NiPoint3);
+        const auto heading = SnapshotGFxValue(a_markerData->heading);
+        const auto alpha = SnapshotGFxValue(a_markerData->alpha);
+        const auto icon = SnapshotGFxValue(a_markerData->icon);
+        const auto scale = SnapshotGFxValue(a_markerData->scale);
         logger::info(
-            "Marker slot {} GFx {} AddMarker (raw): "
-            "heading={:p}/{:08X}/{:016X} alpha={:p}/{:08X}/{:016X} "
+            "AddMarker sample: corpse={:X} handle={:X} cell={:X} index={} "
+            "distance={:.0f} scale={:.1f} corpseFrame={:.0f} passedFrame={} "
+            "manager={:p} dataSlot={:p} dataOffset=0x{:X}/expected=0x{:X} "
+            "positionSlot={:p} positionOffset=0x{:X}/expected=0x{:X} "
+            "target=({:.1f},{:.1f},{:.1f}) "
+            "markerPos=({:.1f},{:.1f},{:.1f}) "
+            "GFx heading={:p}/{:08X}/{:016X} alpha={:p}/{:08X}/{:016X} "
             "icon={:p}/{:08X}/{:016X} scale={:p}/{:08X}/{:016X}",
+            a_formID,
+            a_refHandle,
+            a_cellFormID,
             a_markerIndex,
-            a_stage,
+            a_distance,
+            a_markerScale,
+            a_corpseIconFrame,
+            a_passedIconFrame,
+            static_cast<const void*>(a_manager),
+            static_cast<const void*>(a_markerData),
+            markerDataOffset,
+            expectedMarkerDataOffset,
+            static_cast<const void*>(a_markerPosition),
+            markerPositionOffset,
+            expectedMarkerPositionOffset,
+            a_targetPosition.x,
+            a_targetPosition.y,
+            a_targetPosition.z,
+            a_markerPosition->x,
+            a_markerPosition->y,
+            a_markerPosition->z,
             reinterpret_cast<const void*>(heading.objectInterface), heading.type, heading.value,
             reinterpret_cast<const void*>(alpha.objectInterface), alpha.type, alpha.value,
             reinterpret_cast<const void*>(icon.objectInterface), icon.type, icon.value,
@@ -307,6 +387,7 @@ namespace
         if (!a_compass || !a_compass->view || !a_ui ||
             a_ui->IsMenuOpen(RE::JournalMenu::MENU_NAME) ||
             a_ui->IsMenuOpen(RE::MessageBoxMenu::MENU_NAME) ||
+            a_ui->IsMenuOpen(RE::StatsMenu::MENU_NAME) ||
             a_ui->IsMenuOpen(RE::LockpickingMenu::MENU_NAME)) {
             return false;
         }
@@ -390,6 +471,14 @@ void CorpseCompassMarkers::InstallHook()
 
 void CorpseCompassMarkers::AppendTrackedMarkers()
 {
+#if SHOW_UNLOOTED_MARKER_DIAGNOSTICS
+	static std::vector<MarkerDiagnosticTrace> markerDiagnosticTraces;
+	static std::mutex markerDiagnosticMutex;
+	const auto shouldLogDiagnostic = [&](RE::FormID formID, RE::RefHandle refHandle) {
+		return ShouldLogMarkerDiagnostic(formID, refHandle, markerDiagnosticTraces, markerDiagnosticMutex);
+	};
+#endif
+
 	auto* manager = GetMarkerManager();
 	auto* frameOffsets = GetMarkerFrameOffsets();
 	if (!manager || !frameOffsets) {
@@ -400,6 +489,18 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 	// snapshot storage local so overlapping calls cannot overwrite each other's
 	// corpse list.
 	auto corpses = CorpseTracker::Get().GetSnapshot();
+#if SHOW_UNLOOTED_MARKER_DIAGNOSTICS
+	{
+		std::lock_guard lock(markerDiagnosticMutex);
+		const auto staleBefore = std::chrono::steady_clock::now() - std::chrono::minutes(1);
+		markerDiagnosticTraces.erase(
+			std::remove_if(
+				markerDiagnosticTraces.begin(),
+				markerDiagnosticTraces.end(),
+				[&](const MarkerDiagnosticTrace& trace) { return trace.lastLogged < staleBefore; }),
+			markerDiagnosticTraces.end());
+	}
+#endif
 	std::vector<TrackedCorpse> invalidCorpses;
 
 	auto* player = RE::PlayerCharacter::GetSingleton();
@@ -471,17 +572,22 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 		auto* markerDataSlot = &manager->scaleformMarkerData[markerIndex];
 		auto* markerPosition = &manager->position[markerIndex];
 #if SHOW_UNLOOTED_MARKER_DIAGNOSTICS
-		logger::info(
-			"AddMarker attempt: corpse={:X} handle={:X} cell={:X} index={} "
-			"distance={:.0f} scale={:.1f} iconFrame={:.0f}",
-			corpse.formID,
-			corpse.refHandle,
-			reference->GetParentCell()->GetFormID(),
-			markerIndex,
-			distance,
-			markerScale,
-			corpseIconFrame);
-		LogMarkerSlotSnapshot(markerIndex, "before", *markerDataSlot);
+		const bool logDiagnostic = shouldLogDiagnostic(corpse.formID, corpse.refHandle);
+		if (logDiagnostic) {
+			LogMarkerAttemptSnapshot(
+				corpse.formID,
+				corpse.refHandle,
+				reference->GetParentCell()->GetFormID(),
+				markerIndex,
+				distance,
+				markerScale,
+				corpseIconFrame,
+				enemyIconFrame,
+				manager,
+				markerDataSlot,
+				markerPosition,
+				targetPosition);
+		}
 #endif
 		const bool markerAdded = AddMarker(
 			manager,
@@ -491,13 +597,14 @@ void CorpseCompassMarkers::AppendTrackedMarkers()
 			enemyIconFrame);
 
 #if SHOW_UNLOOTED_MARKER_DIAGNOSTICS
-		logger::info(
-			"AddMarker result: corpse={:X} index={} added={} nextIndex={}",
-			corpse.formID,
-			markerIndex,
-			markerAdded,
-			manager->currentMarkerIndex);
-		LogMarkerSlotSnapshot(markerIndex, "after", *markerDataSlot);
+		if (logDiagnostic && !markerAdded) {
+			logger::warn(
+				"AddMarker returned false: corpse={:X} handle={:X} index={} nextIndex={}",
+				corpse.formID,
+				corpse.refHandle,
+				markerIndex,
+				manager->currentMarkerIndex);
+		}
 #endif
 
 		if (!markerAdded) {
