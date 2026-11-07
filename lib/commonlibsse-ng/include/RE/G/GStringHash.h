@@ -12,8 +12,5 @@ namespace RE
 	public:
 		using BaseType = GHash<GString, U, GString::NoCaseHashFunctor, Allocator>;
 		using SelfType = GStringHash<U, Allocator>;
-
-	private:
-		KEEP_FOR_RE()
 	};
 }

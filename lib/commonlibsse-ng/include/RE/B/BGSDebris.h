@@ -1,8 +1,8 @@
 #pragma once
 
 #include "RE/B/BGSPreloadable.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BSTArray.h"
-#include "RE/B/BSTList.h"
 #include "RE/F/FormTypes.h"
 #include "RE/I/ID.h"
 #include "RE/T/TESForm.h"
@@ -63,8 +63,6 @@ namespace RE
 
 		// members
 		BSSimpleList<BGSDebrisData*> data;  // 28
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSDebris) == 0x38);
 }

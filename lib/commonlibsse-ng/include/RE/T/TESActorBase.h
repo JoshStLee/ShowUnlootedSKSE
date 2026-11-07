@@ -45,14 +45,14 @@ namespace RE
 		void SetAutoCalc(bool a_autoCalc) override;               // 3F
 
 		// override (ActorValueOwner)
-		float              GetActorValue(ActorValue a_akValue) override;                                                      // 01
-		float              GetPermanentActorValue(ActorValue a_akValue) override;                                             // 02
-		float              GetBaseActorValue(ActorValue a_akValue) override;                                                  // 03
-		void               SetBaseActorValue(ActorValue a_akValue, float a_value) override;                                   // 04
-		void               ModActorValue(ActorValue a_akValue, float a_value) override;                                       // 05
-		void               RestoreActorValue(ACTOR_VALUE_MODIFIER a_modifier, ActorValue a_akValue, float a_value) override;  // 06
-		void               SetActorValue(ActorValue a_akValue, float a_value) override;                                       // 07
-		[[nodiscard]] bool GetIsPlayerOwner() const override;                                                                 // 08
+		float              GetActorValue(ActorValue a_akValue) const override;                                            // 01
+		float              GetPermanentActorValue(ActorValue a_akValue) const override;                                   // 02
+		float              GetBaseActorValue(ActorValue a_akValue) const override;                                        // 03
+		void               SetBaseActorValue(ActorValue a_akValue, float a_value) override;                               // 04
+		void               ModBaseActorValue(ActorValue a_akValue, float a_value) override;                               // 05
+		void               ModActorValue(ACTOR_VALUE_MODIFIER a_modifier, ActorValue a_akValue, float a_value) override;  // 06
+		void               SetActorValue(ActorValue a_akValue, float a_value) override;                                   // 07
+		[[nodiscard]] bool GetIsPlayerOwner() const override;                                                             // 08
 
 		// add
 		[[nodiscard]] virtual bool GetHasPLSpecTex() const;                        // 53 - { return false; }
@@ -61,9 +61,6 @@ namespace RE
 		virtual TESForm*           GetAsForm();                                    // 56 - { return this; }
 
 		[[nodiscard]] bool IsLeveled() const;
-
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESActorBase) == 0x150);
 }

@@ -76,8 +76,6 @@ namespace RE
 
 		// members
 		BGSExplosionData data;  // 98 - DATA
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSExplosion) == 0xE8);
 }

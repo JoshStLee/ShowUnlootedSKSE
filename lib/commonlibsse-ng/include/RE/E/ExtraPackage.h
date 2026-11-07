@@ -29,8 +29,6 @@ namespace RE
 		bool            doneOnce;        // 22
 		std::uint8_t    unk23;           // 23
 		std::uint32_t   unk24;           // 24
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraPackage) == 0x28);
 }

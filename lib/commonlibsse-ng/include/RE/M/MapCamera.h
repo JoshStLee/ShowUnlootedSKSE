@@ -13,6 +13,7 @@ namespace RE
 			inline static constexpr auto RTTI = RTTI_MapCameraStates__Exit;
 			inline static constexpr auto VTABLE = VTABLE_MapCameraStates__Exit;
 		};
+		static_assert(sizeof(Exit) == 0x20);
 
 		class Transition : public TESCameraState
 		{
@@ -32,9 +33,16 @@ namespace RE
 			NiPoint3      zoomDestination;  // 4C
 			std::uint32_t unk58;
 			std::uint32_t unk5C;
-			NiPoint3      zoomOrigin;  // 60
+			float         unk60;  // 60
+			float         unk64;  // 64
+			// Three refcounted pointers: the constructor assigns each with the
+			// load-old / store-new pair used for BSTSmartPointer.
+			void*         unk68;  // 68
+			void*         unk70;  // 70
+			void*         unk78;  // 78
+			std::uint64_t unk80;  // 80
 		};
-		static_assert(sizeof(Transition) == 0x70);
+		static_assert(sizeof(Transition) == 0x88);
 
 		class World : public TESCameraState
 		{
@@ -63,14 +71,19 @@ namespace RE
 			std::uint32_t unk5C;
 			std::uint32_t unk60;
 			std::uint32_t unk64;
-			MapData*      mapData;  // 68
+			MapData*      mapData;   // 68
+			bool          unk70;     // 70
+			std::uint8_t  pad71[7];  // 71
 		};
-		static_assert(sizeof(World) == 0x70);
+		static_assert(sizeof(World) == 0x78);
 	}
 
+	class NiNode;
 	class TESWorldSpace;
 	struct IMapCameraCallbacks;
 
+	// SE/AE only: Skyrim VR has no MapCamera, so IMapCameraCallbacks* unk58 is a
+	// flat-only member (VR uses LocalMapCamera).
 	class MapCamera : public TESCamera
 	{
 	public:
@@ -80,7 +93,7 @@ namespace RE
 		~MapCamera() override;  // 00
 
 		// add
-		virtual void Unk_03(void);  // 03
+		virtual void SetMapCameraRoot(NiNode* a_root, const NiPoint3& a_mapPos);  // 03
 
 		// members
 		BSTPoint2<float>                             unk38;       // 38
@@ -97,8 +110,6 @@ namespace RE
 		std::uint8_t                                 pad89;       // 89
 		std::uint16_t                                pad8A;       // 8A
 		std::uint32_t                                pad8C;       // 8C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(MapCamera) == 0x90);
 }

@@ -23,8 +23,6 @@ namespace RE
 		// members
 		TESActorBase* originalBase;  // 10
 		TESActorBase* templateBase;  // 18
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraLeveledCreature) == 0x20);
 }

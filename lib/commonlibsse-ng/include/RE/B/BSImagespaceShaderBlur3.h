@@ -23,8 +23,6 @@ namespace RE
 			REL::RelocateVirtual<decltype(&BSImagespaceShaderBlur3::GetShaderMacros)>(0x0D, 0x0E, this, a_macros);
 		}
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSImagespaceShaderBlur3) == 0x1A8);
 }

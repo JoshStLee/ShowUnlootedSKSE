@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RE/N/NiTArray.h"
+#include "REL/Relocation.h"
 
 namespace RE
 {
@@ -30,6 +31,20 @@ namespace RE
 		virtual bool SetRenderStates(ImageSpaceEffectParam* a_param);                      // 08 - { return 0; }
 		virtual bool RestoreRenderStates(ImageSpaceEffectParam* a_param);                  // 09 - { return 0; }
 
+		void SetEffectSlot(std::uint32_t a_slot, ImageSpaceEffect* a_effect, ImageSpaceEffectParam* a_param, std::int32_t a_arg)
+		{
+			using func_t = void (*)(ImageSpaceEffect*, std::uint32_t, ImageSpaceEffect*, ImageSpaceEffectParam*, std::int32_t);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(100668, 107449) };
+			func(this, a_slot, a_effect, a_param, a_arg);
+		}
+
+		void SetEffectInput(std::uint32_t a_slot, std::uint32_t a_arg2, std::uint32_t a_arg3)
+		{
+			using func_t = void (*)(ImageSpaceEffect*, std::uint32_t, std::uint32_t, std::uint32_t);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(100669, 107450) };
+			func(this, a_slot, a_arg2, a_arg3);
+		}
+
 		// members
 		bool                                              active;          // 08
 		bool                                              unk09;           // 09
@@ -44,8 +59,6 @@ namespace RE
 		std::uint8_t                                      pad89;           // 89
 		std::uint16_t                                     pad8A;           // 8A
 		std::uint32_t                                     pad8C;           // 8C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ImageSpaceEffect) == 0x90);
 }

@@ -34,7 +34,7 @@ namespace RE
 		void ReleaseTexture()
 		{
 			using func_t = decltype(&BSScaleformExternalTexture::ReleaseTexture);
-			static REL::Relocation<func_t> func{ RELOCATION_ID(80294, 82317) };
+			static REL::Relocation<func_t> func{ RELOCATION_ID(80294, 443440) };
 			return func(this);
 		}
 
@@ -50,8 +50,6 @@ namespace RE
 		std::uint32_t        renderTarget;     // 08
 		std::uint32_t        pad0C;            // 0C
 		BSFixedString        filePath;         // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSScaleformExternalTexture) == 0x18);
 }

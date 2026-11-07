@@ -21,8 +21,6 @@ namespace RE
 
 		// members
 		TESRace* race;  // 08 - RNAM
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESRaceForm) == 0x10);
 }

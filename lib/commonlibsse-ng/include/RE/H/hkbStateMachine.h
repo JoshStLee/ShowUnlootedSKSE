@@ -41,15 +41,15 @@ namespace RE
 			~StateInfo() override;  // 00
 
 			// members
-			std::uint64_t unk30;  // 30
-			std::uint64_t unk38;  // 38
-			std::uint64_t unk40;  // 40
-			std::uint64_t unk48;  // 48
-			std::uint64_t unk50;  // 50
-			std::uint64_t unk58;  // 58
-			std::uint64_t unk60;  // 60
-			std::uint64_t unk68;  // 68
-			std::uint64_t unk70;  // 70
+			std::uint64_t       unk30;  // 30
+			std::uint64_t       unk38;  // 38
+			std::uint64_t       unk40;  // 40
+			std::uint64_t       unk48;  // 48
+			std::uint64_t       unk50;  // 50
+			hkReferencedObject* unk58;  // 58
+			std::uint64_t       unk60;  // 60
+			std::uint64_t       unk68;  // 68
+			std::uint64_t       unk70;  // 70
 		};
 		static_assert(sizeof(StateInfo) == 0x78);
 
@@ -75,7 +75,7 @@ namespace RE
 		void     Unk_03(void) override;                                                                             // 03
 		void     Activate(const hkbContext& a_context) override;                                                    // 04
 		void     Update(const hkbContext& a_context, float a_timestep) override;                                    // 05
-		void     Unk_06(void) override;                                                                             // 06
+		void     handleEvent(const hkbContext& context, const hkbEvent e) override;                                 // 06
 		void     Deactivate(const hkbContext& a_context) override;                                                  // 07
 		void     Unk_08(void) override;                                                                             // 08
 		void     Unk_09(void) override;                                                                             // 09
@@ -126,8 +126,6 @@ namespace RE
 		bool                                                       echoNextUpdate;                           // 101
 		std::uint16_t                                              currentStateIndexAndEntered;              // 102
 		std::uint32_t                                              pad0BC;                                   // 104
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkbStateMachine) == 0x108);
 }

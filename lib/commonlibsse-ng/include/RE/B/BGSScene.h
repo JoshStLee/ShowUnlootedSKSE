@@ -25,8 +25,6 @@ namespace RE
 		TESCondition              startConditions;       // 00
 		TESCondition              completionConditions;  // 08
 		BGSStoryManagerQuestNode* questNode;             // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSScenePhase) == 0x18);
 
@@ -89,7 +87,7 @@ namespace RE
 
 		// members
 		BSTArray<BGSScenePhase*>                                phases;                 // 20
-		BSTArray<FormID>                                        actors;                 // 00 - ALID
+		BSTArray<std::uint32_t>                                 actors;                 // 00 - ALID (alias ID)
 		BSTArray<REX::EnumSet<SCENE_ACTOR_FLAG, std::uint32_t>> actorFlags;             // 18 - LNAM
 		BSTArray<REX::EnumSet<BehaviourFlag, std::uint32_t>>    actorProgressionFlags;  // 30 - DNAM
 		BSTArray<BGSSceneAction*>                               actions;                // 80
@@ -101,13 +99,12 @@ namespace RE
 		std::uint8_t                                            unkB1;                  // B1
 		std::uint8_t                                            unkB2;                  // B2
 		std::uint8_t                                            unkB3;                  // B3
-		std::uint32_t                                           unkB4;                  // B4
+		bool                                                    isShuttingDown;         // B4 - byte flag, set while the scene is shutting down
+		std::uint8_t                                            padB5[3];               // B5
 		std::uint32_t                                           unkB8;                  // B8
-		std::uint32_t                                           unkBC;                  // BC
+		std::uint32_t                                           currentPhaseIndex;      // BC - -1 when not playing, 0 on start, incremented per phase
 		std::uint32_t                                           unkC0;                  // C0
 		std::uint32_t                                           padC4;                  // C4
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSScene) == 0xC8);
 }

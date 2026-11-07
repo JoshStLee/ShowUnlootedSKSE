@@ -29,8 +29,6 @@ namespace RE
 		BSFixedString fadeOutName;      // 38
 		float         fillPct;          // 40
 		std::uint32_t pad44;            // 44
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(HUDMeter) == 0x48);
 }

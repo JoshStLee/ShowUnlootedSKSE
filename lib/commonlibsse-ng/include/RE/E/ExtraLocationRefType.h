@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		BGSLocationRefType* locRefType;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraLocationRefType) == 0x18);
 }

@@ -2,6 +2,7 @@
 
 #include "RE/I/IMenu.h"
 #include "RE/M/MenuEventHandler.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -18,6 +19,7 @@ namespace RE
 	{
 	public:
 		inline static constexpr auto      RTTI = RTTI_CursorMenu;
+		inline static constexpr auto      VTABLE = VTABLE_CursorMenu;
 		constexpr static std::string_view MENU_NAME = "Cursor Menu";
 
 		~CursorMenu() override;  // 00
@@ -27,29 +29,14 @@ namespace RE
 
 		// override (MenuEventHandler)
 #ifndef SKYRIM_CROSS_VR
-		bool CanProcess(InputEvent* a_event) override;              // 01
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#endif
+#ifdef EXCLUSIVE_SKYRIM_VR
 		bool ProcessThumbstick(ThumbstickEvent* a_event) override;  // 03
 		bool ProcessMouseMove(MouseMoveEvent* a_event) override;    // 04
 #endif
 
-		[[nodiscard]] MenuEventHandler* AsMenuEventHandler() noexcept
-		{
-			return &REL::RelocateMember<MenuEventHandler>(this, 0x30, 0x40);
-		}
-
-		[[nodiscard]] const MenuEventHandler* AsMenuEventHandler() const noexcept
-		{
-			return const_cast<CursorMenu*>(this)->AsMenuEventHandler();
-		}
-
-	private:
-		KEEP_FOR_RE()
+		RUNTIME_CAST_ACCESSOR(MenuEventHandler, AsMenuEventHandler, 0x30, 0x40);
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(CursorMenu) == 0x40);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(CursorMenu) == 0x50);
-#else
-	static_assert(sizeof(CursorMenu) == 0x30);
-#endif
+	STATIC_ASSERT_SIZE(CursorMenu, 0x40, 0x40, 0x50, 0x30);
 }

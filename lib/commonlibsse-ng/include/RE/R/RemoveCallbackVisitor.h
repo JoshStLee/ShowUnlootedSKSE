@@ -19,8 +19,6 @@ namespace RE
 
 		// members
 		FxDelegate::CallbackHash* hash;  // 08
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(RemoveCallbackVisitor) == 0x10);
 }

@@ -30,8 +30,6 @@ namespace RE
 		GASGlobalObject* globalObject;  // 550
 		std::uint64_t    unk558;        // 558
 		std::uint64_t    unk560;        // 560
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GASGlobalContext) == 0x568);
 }

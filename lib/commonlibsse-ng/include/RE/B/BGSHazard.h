@@ -65,8 +65,6 @@ namespace RE
 
 		// members
 		BGSHazardData data;  // 80 - DATA
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSHazard) == 0xB8);
 }

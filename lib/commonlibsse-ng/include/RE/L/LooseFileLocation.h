@@ -47,15 +47,20 @@ namespace RE
 			static LooseFileLocation* Create(const char* a_prefix, std::uint32_t a_minimumAsyncPacketSize, bool a_asyncSupported)
 			{
 				auto memory = malloc<LooseFileLocation>();
-				std::memset(memory, 0, sizeof(LooseFileLocation));
-
-				static REL::Relocation<std::uintptr_t> vtbl{ RELOCATION_ID(232012, 188191) };
-				((std::uintptr_t*)memory)[0] = vtbl.address();
-
-				memory->prefix = a_prefix;
-				memory->minimumAsyncPacketSize = a_minimumAsyncPacketSize;
-				memory->asyncSupported = a_asyncSupported;
-
+				if (memory) {
+#ifdef __clang__
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Wdynamic-class-memaccess"
+#endif
+					std::memset(memory, 0, sizeof(LooseFileLocation));
+#ifdef __clang__
+#	pragma clang diagnostic pop
+#endif
+					stl::emplace_vtable<BSResource::LooseFileLocation>(memory);
+					memory->prefix = a_prefix;
+					memory->minimumAsyncPacketSize = a_minimumAsyncPacketSize;
+					memory->asyncSupported = a_asyncSupported;
+				}
 				return memory;
 			}
 

@@ -56,8 +56,6 @@ namespace RE
 		BSTArray<BSIMusicTrack*>                  tracks;             // 30 - TNAM
 		REX::EnumSet<MUSIC_STATUS, std::uint32_t> typeStatus;         // 48
 		std::uint32_t                             pad4C;              // 4C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSIMusicType) == 0x50);
 }

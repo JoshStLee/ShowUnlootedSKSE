@@ -19,8 +19,6 @@ namespace RE
 
 		// override (BSExtraData)
 		[[nodiscard]] ExtraDataType GetType() const override;  // 01 - { return kMagicCaster; }
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraMagicCaster) == 0x58);
 }

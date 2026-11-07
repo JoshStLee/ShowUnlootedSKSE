@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RE/B/BSNiNode.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -28,7 +29,7 @@ namespace RE
 #endif
 
 		// add
-		virtual bool ParseNameForValue();  // 35
+		SKYRIM_REL_VR_VIRTUAL bool ParseNameForValue();  // 35
 
 		struct VALUE_NODE_RUNTIME_DATA
 		{
@@ -38,22 +39,11 @@ namespace RE
 	NiPointer<BSMasterParticleSystem> associatedObject; /* 130 */
 		};
 
-		[[nodiscard]] inline VALUE_NODE_RUNTIME_DATA& GetValueNodeRuntimeData() noexcept
-		{
-			return REL::RelocateMember<VALUE_NODE_RUNTIME_DATA>(this, 0x128, 0x150);
-		}
-
-		[[nodiscard]] inline const VALUE_NODE_RUNTIME_DATA& GetValueNodeRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<VALUE_NODE_RUNTIME_DATA>(this, 0x128, 0x150);
-		}
-
+		RUNTIME_DATA_ACCESSOR_EX(VALUE_NODE_RUNTIME_DATA, GetValueNodeRuntimeData, 0x128, 0x150);
 		// members
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT  // 128, 150
 #endif
-			private :
-			KEEP_FOR_RE()
 	};
 }
 #undef RUNTIME_DATA_CONTENT

@@ -156,6 +156,17 @@ namespace RE
 		// add
 		virtual std::uint32_t QNavmeshID() = 0;  // 01
 
+		NiPoint3 GetNormal(std::uint16_t a_tri) const
+		{
+			NiPoint3 result;
+
+			using func_t = NiPoint3*(const BSNavmesh*, NiPoint3&, std::uint16_t);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(88674, 91114) };
+			func(this, result, a_tri);
+
+			return result;
+		}
+
 		// members
 		std::uint32_t                                                pad00C;                 // 00C
 		BSTArray<BSNavmeshVertex>                                    vertices;               // 010
@@ -170,8 +181,6 @@ namespace RE
 		BSTArray<void*>                                              unk0F0;                 // 0F0 - obstaclePOVs/disabledLinks?
 		BSTSmartPointer<BSPathingCell>                               parentCell;             // 108
 		void*                                                        unk110;                 // 110 - navmeshInfo?
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSNavmesh) == 0x118);
 }

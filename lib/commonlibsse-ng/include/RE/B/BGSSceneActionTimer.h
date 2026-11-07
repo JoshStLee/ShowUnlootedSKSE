@@ -18,8 +18,8 @@ namespace RE
 		void ClearFlags() override;                                        // 04 - { BGSSceneAction::ClearFlags(); }
 		Type GetType() const override;                                     // 07 - { return kTimer; }
 		void LoadBuffer(void* a_arg1, BGSLoadGameBuffer* a_buf) override;  // 09
-		void Unk_0A(void) override;                                        // 0A
-		void Unk_0B(void) override;                                        // 0B
+		void SaveBuffer(BGSSaveFormBuffer* a_buf) override;                // 0A
+		void ClearActiveFlags() override;                                  // 0B
 		void Unk_0D(void) override;                                        // 0D
 		void Unk_11(void) override;                                        // 11
 		void Unk_13(void) override;                                        // 13
@@ -28,8 +28,6 @@ namespace RE
 		float         timerSeconds;  // 20 - SNAM
 		std::uint32_t unk24;         // 24
 		std::uint64_t unk28;         // 28
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSSceneActionTimer) == 0x30);
 }

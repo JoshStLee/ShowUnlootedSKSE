@@ -1,11 +1,12 @@
 #pragma once
 
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BSString.h"
 #include "RE/B/BSTArray.h"
 #include "RE/B/BSTHashMap.h"
-#include "RE/B/BSTList.h"
 #include "RE/F/FormTypes.h"
 #include "RE/N/NiPoint2.h"
+#include "RE/N/NiPoint3.h"
 #include "RE/N/NiSmartPointer.h"
 #include "RE/N/NiTPointerMap.h"
 #include "RE/T/TESForm.h"
@@ -108,8 +109,6 @@ namespace RE
 		// this filtered version of the full data removes all duplicate RNAM entries and also all entries where cell x,y doesn't match cell that contains refr x,y
 		// this is the one actually used for loading large references on cell attach
 		BSTHashMap<CellID, FormID*> cellFormIDMapFiltered;  // 60
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSLargeRefData) == 0x90);
 
@@ -169,21 +168,23 @@ namespace RE
 		~TESWorldSpace() override;  // 00
 
 		// override (TESForm)
-		void        InitializeData() override;                                          // 04
-		void        ClearData() override;                                               // 05
-		bool        Load(TESFile* a_mod) override;                                      // 06
-		bool        LoadPartial(TESFile* a_mod) override;                               // 07
-		TESForm*    CreateDuplicateForm(bool a_createEditorID, void* a_arg2) override;  // 09
-		bool        FindInFileFast(TESFile* a_mod) override;                            // 0C
-		void        InitItemImpl() override;                                            // 13
-		const char* GetFormEditorID() const override;                                   // 32 - { return editorID.c_str(); }
-		bool        SetFormEditorID(const char* a_str) override;                        // 33 - { editorID = a_str; }
-		bool        IsParentForm() override;                                            // 34 - { return true; }
-		bool        IsFormTypeChild(FormType a_type) override;                          // 36
+		void        InitializeData() override;                                                                          // 04
+		void        ClearData() override;                                                                               // 05
+		bool        Load(TESFile* a_mod) override;                                                                      // 06
+		bool        LoadPartial(TESFile* a_mod) override;                                                               // 07
+		TESForm*    CreateDuplicateForm(bool a_createEditorID, NiTPointerMap<TESForm*, TESForm*>* a_copyMap) override;  // 09
+		bool        FindInFileFast(TESFile* a_mod) override;                                                            // 0C
+		void        InitItemImpl() override;                                                                            // 13
+		const char* GetFormEditorID() const override;                                                                   // 32 - { return editorID.c_str(); }
+		bool        SetFormEditorID(const char* a_str) override;                                                        // 33 - { editorID = a_str; }
+		bool        IsParentForm() override;                                                                            // 34 - { return true; }
+		bool        IsFormTypeChild(FormType a_type) override;                                                          // 36
 
 		[[nodiscard]] bool           HasMaxHeightData() const;
+		[[nodiscard]] bool           GetMaxHeightAt(const NiPoint3& a_xy, float& a_outHeight);
 		[[nodiscard]] TESObjectCELL* GetSkyCell();
 		[[nodiscard]] float          GetDefaultWaterHeight() const;
+		[[nodiscard]] TESObjectCELL* LoadCell(std::int16_t a_x, std::int16_t a_y);
 
 		BGSTerrainManager* GetTerrainManager() const
 		{
@@ -243,8 +244,6 @@ namespace RE
 		float                                                         northRotation;            // 348
 		std::uint32_t                                                 pad34C;                   // 34C
 		std::int8_t*                                                  maxHeightData;            // 350 - MHDT
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESWorldSpace) == 0x358);
 }

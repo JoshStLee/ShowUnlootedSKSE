@@ -32,6 +32,13 @@ namespace RE
 		bool                 GetAllowTargetRoot() override;          // 2C
 		bool                 IsReadyForAttach() override;            // 1D
 
+		void SetAttachRoot()
+		{
+			using func_t = decltype(&WeaponEnchantmentController::SetAttachRoot);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(34074, 34871) };
+			func(this);
+		}
+
 		// members
 		ActorMagicCaster*     caster;       // 08
 		Actor*                target;       // 10

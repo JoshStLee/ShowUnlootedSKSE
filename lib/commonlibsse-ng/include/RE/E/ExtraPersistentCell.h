@@ -21,8 +21,6 @@ namespace RE
 
 		// members
 		TESObjectCELL* persistentCell;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraPersistentCell) == 0x18);
 }

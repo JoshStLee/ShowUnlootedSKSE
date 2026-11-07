@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RE/B/BSExtraData.h"
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/E/ExtraDataTypes.h"
 
 namespace RE
@@ -24,8 +24,6 @@ namespace RE
 		BSSimpleList<REF_ACTIVATE_DATA*> children;               // 10
 		float                            activateChildrenTimer;  // 20
 		std::uint32_t                    pad24;                  // 24
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraActivateRefChildren) == 0x28);
 }

@@ -574,7 +574,15 @@ namespace RE
 	};
 	using DEFAULT_OBJECT = DEFAULT_OBJECTS::DEFAULT_OBJECT;
 
-#define MakeDefaultObjectID(se, vr) (se | (vr << 16))
+// IDs pack SE (low 16) + VR (high 16). Single-runtime builds resolve to the
+// concrete index; SKYRIM_CROSS_VR keeps the packed form for runtime selection.
+#if defined(SKYRIM_CROSS_VR)
+#	define MakeDefaultObjectID(se, vr) (se | (vr << 16))
+#elif defined(EXCLUSIVE_SKYRIM_VR)
+#	define MakeDefaultObjectID(se, vr) (vr)
+#else
+#	define MakeDefaultObjectID(se, vr) (se)
+#endif
 	enum class DefaultObjectID
 	{
 		kWerewolfSpell = 0,
@@ -1021,13 +1029,15 @@ namespace RE
 
 		[[nodiscard]] TESForm* GetObject(DefaultObject a_object) const noexcept
 		{
-			return GetObject(std::to_underlying(a_object));
+			auto obj = const_cast<BGSDefaultObjectManager*>(this)->GetObject(static_cast<DefaultObjectID>(std::to_underlying(a_object)));
+			return obj ? *obj : nullptr;
 		}
 
 		template <class T>
 		[[nodiscard]] T* GetObject(DefaultObject a_object) const noexcept
 		{
-			return GetObject<T>(std::to_underlying(a_object));
+			auto obj = const_cast<BGSDefaultObjectManager*>(this)->GetObject<T>(static_cast<DefaultObjectID>(std::to_underlying(a_object)));
+			return obj ? *obj : nullptr;
 		}
 
 		[[nodiscard]] TESForm* GetObject(std::size_t a_idx) const noexcept
@@ -1052,17 +1062,26 @@ namespace RE
 			return obj && *obj && (*obj)->As<T>() ? reinterpret_cast<T**>(obj) : nullptr;
 		}
 
+		enum class Ae1799Object : std::size_t
+		{
+			kHelpManualNX = 188,
+			kHelpMotionAttackBlock = 264,
+			kHelpMotionBowAiming = 265,
+			kHelpMotionMagicAiming = 266,
+			kHelpMotionLockpicking = 267,
+			kHelpAmiibo = 268,
+		};
+
+		[[nodiscard]] TESForm** GetAe1799Object(Ae1799Object a_object) noexcept;
+
 		[[nodiscard]] bool IsObjectInitialized(DEFAULT_OBJECT a_object) const noexcept
 		{
-			return IsObjectInitialized(std::to_underlying(a_object));
+			return IsObjectInitialized(static_cast<DefaultObjectID>(std::to_underlying(a_object)));
 		}
 
 		[[nodiscard]] bool IsObjectInitialized(DefaultObjectID a_object) const noexcept;
 
-		[[nodiscard]] bool IsObjectInitialized(std::size_t a_idx) const noexcept
-		{
-			return (&REL::RelocateMember<bool>(this, 0xB80, 0xBA8))[a_idx];
-		}
+		[[nodiscard]] bool IsObjectInitialized(std::size_t a_idx) const noexcept;
 
 		[[nodiscard]] static bool SupportsVR(DefaultObjectID a_object) noexcept;
 
@@ -1083,8 +1102,6 @@ namespace RE
 #else
 		std::uint8_t unk5D8[0x718];  // 5D8
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
 #if defined(EXCLUSIVE_SKYRIM_VR)
 	static_assert(sizeof(BGSDefaultObjectManager) == 0xD20);

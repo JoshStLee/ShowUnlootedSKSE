@@ -63,8 +63,6 @@ namespace RE
 		NiPointer<NiAVObject>                  artObject3D;        // C8
 		REX::EnumSet<Flags, std::uint32_t>     flags;              // D0
 		std::uint32_t                          padD4;              // D4
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ModelReferenceEffect) == 0xD8);
 }

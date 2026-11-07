@@ -45,8 +45,6 @@ namespace RE
 		TESTopic*                         startingTopic;  // 30 - SNAM
 		DIALOGUE_TYPE                     type;           // 38 - TNAM
 		std::uint32_t                     pad3C;          // 3C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSDialogueBranch) == 0x40);
 }

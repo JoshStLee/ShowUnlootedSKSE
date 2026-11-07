@@ -20,8 +20,6 @@ namespace RE
 		// members
 		MagicSystem::SpellType spellType;    // 90
 		EffectArchetype        archetypeID;  // 94
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(CureEffect) == 0x98);
 }

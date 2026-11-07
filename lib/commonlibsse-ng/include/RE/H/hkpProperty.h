@@ -33,8 +33,6 @@ namespace RE
 		std::uint32_t    key;               // 00
 		std::uint32_t    alignmentPadding;  // 04
 		hkpPropertyValue value;             // 08
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpProperty) == 0x10);
 }

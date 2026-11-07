@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		BSTArray<ObjectRefHandle> refs;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraReflectorRefs) == 0x28);
 }

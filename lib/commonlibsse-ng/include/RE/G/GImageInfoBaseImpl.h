@@ -19,8 +19,6 @@ namespace RE
 		GPtr<GTexture> texture;       // 18
 		std::uint32_t  textureUsage;  // 20
 		std::uint32_t  pad24;         // 24
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GImageInfoBaseImpl) == 0x28);
 }

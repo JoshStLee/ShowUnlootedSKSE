@@ -22,11 +22,13 @@ namespace RE
 		NiTransform operator*(const NiTransform& a_rhs) const;
 		NiPoint3    operator*(const NiPoint3& a_point) const;
 
+		// add
+		float GetHeadingAngle(const NiPoint3& a_targPos, bool b_abs = false) const;
+
+		// members
 		NiMatrix3 rotate;     // 00
 		NiPoint3  translate;  // 24
 		float     scale;      // 30
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiTransform) == 0x34);
 }

@@ -5,6 +5,13 @@ namespace RE
 	class hkStringPtr
 	{
 	public:
+		enum StringFlags
+		{
+			kMask = static_cast<std::uint32_t>(-1),
+			kManaged = 1 << 0
+		};
+
+		explicit hkStringPtr(std::string_view a_data, const std::uint32_t a_mask = kMask, const bool a_mark = kManaged);
 		hkStringPtr(const char* a_data);
 
 		// member types
@@ -20,14 +27,7 @@ namespace RE
 		[[nodiscard]] size_type length() const;
 
 	protected:
-		enum
-		{
-			kManaged = 1 << 0
-		};
-
 		const char* _data;  // 0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkStringPtr) == 0x8);
 }

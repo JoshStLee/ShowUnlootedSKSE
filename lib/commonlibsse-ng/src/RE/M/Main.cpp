@@ -2,6 +2,7 @@
 
 #include "RE/N/NiCamera.h"
 #include "RE/N/NiSmartPointer.h"
+#include "RE/S/SceneGraph.h"
 
 namespace RE
 {
@@ -31,10 +32,17 @@ namespace RE
 		return func();
 	}
 
-	Scenegraph* Main::WorldRootNode()
+	SceneGraph* Main::WorldRootNode()
 	{
-		static REL::Relocation<NiPointer<Scenegraph>*> nodePtr{ RELOCATION_ID(517006, 403513) };
+		static REL::Relocation<NiPointer<SceneGraph>*> nodePtr{ RELOCATION_ID(517006, 403513) };
 		return nodePtr->get();
+	}
+
+	void Main::RenderWorld(bool a_unk)
+	{
+		using func_t = decltype(&Main::RenderWorld);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(100424, 107142) };
+		return func(a_unk);
 	}
 
 	void Main::SetActive(bool a_active)

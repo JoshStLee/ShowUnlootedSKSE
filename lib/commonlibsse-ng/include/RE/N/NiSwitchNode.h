@@ -29,7 +29,7 @@ namespace RE
 		void UpdateSelectedDownwardPass(NiUpdateData& a_data, std::uint32_t a_arg2) override;               // 2D
 		void UpdateRigidDownwardPass(NiUpdateData& a_data, std::uint32_t a_arg2) override;                  // 2E
 		void UpdateWorldBound() override;                                                                   // 2F
-		void OnVisible(NiCullingProcess& a_process) override;                                               // 34
+		void OnVisible(NiCullingProcess& a_process, std::int32_t a_alphaGroupIndex) override;               // 34
 		void AttachChild(NiAVObject* a_child, bool a_firstAvail) override;                                  // 35
 		void DetachChild1(NiAVObject* a_child, NiPointer<NiAVObject>& a_childOut) override;                 // 37
 		void DetachChild2(NiAVObject* a_child) override;                                                    // 38
@@ -46,11 +46,5 @@ namespace RE
 		std::uint32_t                    revID;       // 134
 		NiTPrimitiveArray<std::uint32_t> childRevID;  // 138
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(NiSwitchNode) == 0x150);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(NiSwitchNode) == 0x178);
-#else
-	static_assert(sizeof(NiSwitchNode) == 0x138);
-#endif
+	STATIC_ASSERT_SIZE(NiSwitchNode, 0x150, 0x150, 0x178, 0x138);
 }

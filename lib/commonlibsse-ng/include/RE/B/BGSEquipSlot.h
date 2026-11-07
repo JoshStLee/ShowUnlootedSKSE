@@ -42,8 +42,6 @@ namespace RE
 		BSTArray<BGSEquipSlot*>           parentSlots;  // 20 - PNAM
 		REX::EnumSet<Flag, std::uint32_t> flags;        // 38 - DATA
 		std::uint32_t                     pad3C;        // 3C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSEquipSlot) == 0x40);
 }

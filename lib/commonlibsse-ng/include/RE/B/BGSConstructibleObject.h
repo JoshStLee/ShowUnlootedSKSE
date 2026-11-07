@@ -37,6 +37,10 @@ namespace RE
 		bool Load(TESFile* a_mod) override;  // 06
 		void InitItemImpl() override;        // 13
 
+		[[nodiscard]] bool  CanBeCreatedOnWorkbench(const TESFurniture* a_workbench, bool a_checkConditions) const;
+		[[nodiscard]] float CalcSkillUse() const;
+		bool                CreateItem() const;
+
 		// members
 		TESContainer            requiredItems;  // 20
 		TESCondition            conditions;     // 38
@@ -45,8 +49,6 @@ namespace RE
 		ConstructibleObjectData data;           // 50
 		std::uint16_t           pad52;          // 52
 		std::uint32_t           unk54;          // 54
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSConstructibleObject) == 0x58);
 }

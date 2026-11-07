@@ -62,8 +62,6 @@ namespace RE
 
 		// members
 		Array entries;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraMissingLinkedRefIDs) == 0x28);
 }

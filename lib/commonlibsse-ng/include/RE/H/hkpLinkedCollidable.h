@@ -21,8 +21,6 @@ namespace RE
 
 		// members
 		hkArray<CollisionEntry> collisionEntries;  // 70
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpLinkedCollidable) == 0x80);
 }

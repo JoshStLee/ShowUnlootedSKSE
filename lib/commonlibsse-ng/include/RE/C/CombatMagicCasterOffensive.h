@@ -28,8 +28,6 @@ namespace RE
 		// members
 		AITimer startCastTimer;  // 20
 		AITimer stopCastTimer;   // 28
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(CombatMagicCasterOffensive) == 0x30);
 }

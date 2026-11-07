@@ -17,8 +17,6 @@ namespace RE
 
 		// members
 		std::uint64_t unk20[11];  // 20
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GFxEditTextCharacterDef) == 0x78);
 }

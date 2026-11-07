@@ -52,8 +52,6 @@ namespace RE
 		bool          goodForRead;  // 32
 		std::uint8_t  pad33;        // 33
 		std::uint32_t pad34;        // 34
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSSystemFileStorage) == 0x38);
 }

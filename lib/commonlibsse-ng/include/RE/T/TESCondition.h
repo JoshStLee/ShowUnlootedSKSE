@@ -7,6 +7,7 @@ namespace RE
 {
 	struct BGSPackageDataList;
 	class BGSStoryEvent;
+	class TESForm;
 	class TESGlobal;
 	class TESObjectREFR;
 	class TESQuest;
@@ -980,6 +981,7 @@ namespace RE
 		TES_HEAP_REDEFINE_NEW();
 
 		bool operator()(ConditionCheckParams& a_solution) const;
+		void Copy(const TESConditionItem* a_other, TESForm* a_arg2 = nullptr);
 		bool IsTrue(ConditionCheckParams& a_solution) const;
 
 		// members
@@ -999,12 +1001,11 @@ namespace RE
 		[[nodiscard]] explicit operator bool() const;
 
 		bool operator()(TESObjectREFR* a_actionRef, TESObjectREFR* a_targetRef) const;
+		void Copy(const TESCondition* a_other, TESForm* a_arg2 = nullptr);
 		bool IsTrue(TESObjectREFR* a_actionRef, TESObjectREFR* a_targetRef) const;  // Perk fragments will short circuit
 
 		// members
 		TESConditionItem* head;  // 0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESCondition) == 0x8);
 }

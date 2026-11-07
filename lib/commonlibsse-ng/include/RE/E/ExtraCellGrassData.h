@@ -13,11 +13,11 @@ namespace RE
 
 	struct CellGrassData
 	{
-		std::uint64_t                 grassTypeKey;   // 00
-		BSFixedString                 grassModelKey;  // 08
-		NiPointer<BSInstanceTriShape> triShape;       // 10
-		BSTArray<void*>               unk18;          // 18
-		BSTArray<void*>               unk30;          // 30
+		std::uint64_t                            grassTypeKey;             // 00
+		BSFixedString                            grassModelKey;            // 08
+		NiPointer<BSMultiStreamInstanceTriShape> triShape;                 // 10
+		BSTArray<std::uint32_t>                  instanceGroupIndicies;    // 18
+		BSTArray<float>                          instanceGroupFadeAlphas;  // 30
 	};
 	static_assert(sizeof(CellGrassData) == 0x48);
 
@@ -36,8 +36,6 @@ namespace RE
 		// members
 		BSTArray<CellGrassData*>    grassHandles;  // 10
 		NiPointer<AddCellGrassTask> addGrassTask;  // 28
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraCellGrassData) == 0x30);
 }

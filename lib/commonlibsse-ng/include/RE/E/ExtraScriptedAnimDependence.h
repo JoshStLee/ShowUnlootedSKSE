@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		BSTArray<BSTTuple<ObjectRefHandle, std::uint32_t>> dependentManagers;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraScriptedAnimDependence) == 0x28);
 }

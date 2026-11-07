@@ -6,9 +6,9 @@
 #include "RE/B/BSIntrusiveRefCounted.h"
 #include "RE/B/BSPointerHandle.h"
 #include "RE/B/BSResourceHandle.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BSSoundHandle.h"
 #include "RE/B/BSTHashMap.h"
-#include "RE/B/BSTList.h"
 #include "RE/B/BSTSmartPointer.h"
 #include "RE/B/BSTTuple.h"
 #include "RE/M/Movement.h"
@@ -360,14 +360,12 @@ namespace RE
 		bool                                                  fistsDrawn;                                // 46C
 		bool                                                  unk46D;                                    // 46D
 		bool                                                  unk46E;                                    // 46E
-		bool                                                  unk46F;                                    // 46F
+		bool                                                  allowRotation;                             // 46F
 		bool                                                  doorActivated;                             // 470
 		bool                                                  unk471;                                    // 471
 		bool                                                  aggroRadiusStarted;                        // 472
 		std::uint8_t                                          pad473;                                    // 473
 		std::uint32_t                                         pad474;                                    // 474
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(HighProcessData) == 0x478);
 }

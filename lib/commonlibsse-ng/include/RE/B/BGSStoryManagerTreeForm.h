@@ -38,8 +38,6 @@ namespace RE
 		BSTArray<BGSStoryManagerTreeForm*> cursorAncestry;      // 20
 		std::uint32_t                      queryID;             // 38
 		std::uint32_t                      pad3C;               // 3C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSStoryManagerTreeVisitor) == 0x40);
 
@@ -60,8 +58,6 @@ namespace RE
 		// members
 		std::uint32_t lastVisitorID;  // 20
 		std::uint32_t pad24;          // 24
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSStoryManagerTreeForm) == 0x28);
 }

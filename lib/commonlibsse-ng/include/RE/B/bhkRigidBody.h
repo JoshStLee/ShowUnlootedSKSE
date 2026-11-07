@@ -2,6 +2,8 @@
 
 #include "RE/B/BSTArray.h"
 #include "RE/B/bhkEntity.h"
+#include "RE/H/hkQuaternion.h"
+#include "RE/H/hkVector4.h"
 
 namespace RE
 {
@@ -10,6 +12,7 @@ namespace RE
 	class hkQuaternion;
 	class hkVector4;
 	class hkpRigidBody;
+	class bhkRigidBodyT;
 
 	class bhkRigidBody : public bhkEntity
 	{
@@ -59,8 +62,6 @@ namespace RE
 
 		// members
 		BSTArray<void*> unk28;  // 28 - array of smart ptrs to bhkConstraints
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(bhkRigidBody) == 0x40);
 }

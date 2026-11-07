@@ -1,10 +1,10 @@
 #pragma once
 
 #include "RE/H/hkBaseObject.h"
+#include "RE/H/hkClass.h"
 
 namespace RE
 {
-	class hkClass;
 	class hkStatisticsCollector;
 
 	class hkReferencedObject : public hkBaseObject
@@ -41,8 +41,6 @@ namespace RE
 		std::uint16_t                 memSizeAndFlags;  // 08
 		volatile mutable std::int16_t referenceCount;   // 0A
 		std::uint32_t                 pad0C;            // 0C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkReferencedObject) == 0x10);
 }

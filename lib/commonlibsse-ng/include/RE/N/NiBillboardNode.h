@@ -38,9 +38,9 @@ namespace RE
 		void          SaveBinary(NiStream& a_stream) override;            // 1B
 		bool          IsEqual(NiObject* a_object) override;               // 1C
 #ifndef SKYRIM_CROSS_VR
-		void UpdateWorldBound() override;                      // 2F
-		void UpdateWorldData(NiUpdateData* a_data) override;   // 30
-		void OnVisible(NiCullingProcess& a_process) override;  // 34
+		void UpdateWorldBound() override;                                                      // 2F
+		void UpdateWorldData(NiUpdateData* a_data) override;                                   // 30
+		void OnVisible(NiCullingProcess& a_process, std::int32_t a_alphaGroupIndex) override;  // 34
 #endif
 		[[nodiscard]] FaceMode GetMode() const
 		{
@@ -55,11 +55,5 @@ namespace RE
 		// members
 		std::uint16_t userFlags;  // 128
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(NiBillboardNode) == 0x130);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(NiBillboardNode) == 0x158);
-#else
-	static_assert(sizeof(NiBillboardNode) == 0x118);
-#endif
+	STATIC_ASSERT_SIZE(NiBillboardNode, 0x130, 0x130, 0x158, 0x118);
 }

@@ -28,10 +28,9 @@ namespace RE
 		std::uint16_t          pad0A;       // 0A
 		std::uint32_t          pad0C;       // 0C
 		TESImageSpaceModifier* blurEffect;  // 10
-		std::uint32_t          blurCount;   // 18
+		std::uint16_t          blurCount;   // 18
+		std::uint16_t          pad1A;       // 1A
 		std::uint32_t          pad1C;       // 1C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(UIBlurManager) == 0x20);
 }

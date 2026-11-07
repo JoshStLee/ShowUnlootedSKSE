@@ -14,8 +14,5 @@ namespace RE
 		};
 
 		GFC_MEMORY_REDEFINE_NEW(GNewOverrideBase, Stat);
-
-	private:
-		KEEP_FOR_RE()
 	};
 }

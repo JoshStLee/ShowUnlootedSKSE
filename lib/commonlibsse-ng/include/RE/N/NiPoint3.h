@@ -19,7 +19,10 @@ namespace RE
 		bool         operator<(const NiPoint3& a_rhs) const;
 		NiPoint3     operator+(const NiPoint3& a_rhs) const;
 		NiPoint3     operator-(const NiPoint3& a_rhs) const;
-		float        operator*(const NiPoint3& a_rhs) const;
+		NiPoint3     operator*(const NiPoint3& a_rhs) const;
+		NiPoint3     operator/(const NiPoint3& a_rhs) const;
+		NiPoint3     operator+(float a_scalar) const;
+		NiPoint3     operator-(float a_scalar) const;
 		NiPoint3     operator*(float a_scalar) const;
 		NiPoint3     operator/(float a_scalar) const;
 		NiPoint3     operator-() const;
@@ -27,6 +30,8 @@ namespace RE
 		NiPoint3&    operator-=(const NiPoint3& a_rhs);
 		NiPoint3&    operator*=(const NiPoint3& a_rhs);
 		NiPoint3&    operator/=(const NiPoint3& a_rhs);
+		NiPoint3&    operator+=(float a_scalar);
+		NiPoint3&    operator-=(float a_scalar);
 		NiPoint3&    operator*=(float a_scalar);
 		NiPoint3&    operator/=(float a_scalar);
 
@@ -50,8 +55,6 @@ namespace RE
 		float x{ 0.0F };  // 0
 		float y{ 0.0F };  // 4
 		float z{ 0.0F };  // 8
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiPoint3) == 0xC);
 }

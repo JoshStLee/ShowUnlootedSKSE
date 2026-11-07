@@ -26,10 +26,11 @@ namespace RE
 		virtual float      GetSecondaryAVWeight() const;     // 22
 
 		// members
-		ActorValue secondaryActorValue;  // 98
-		float      secondaryAVWeight;    // 9C
-	private:
-		KEEP_FOR_RE()
+		// The ctor stores mgef->data.secondAVWeight here (0.0f when
+		// data.secondaryAV is kNone); the secondary ActorValue itself is
+		// never cached — read it via GetAdditionalActorValue().
+		float         secondaryAVWeight;  // 98
+		std::uint32_t pad9C;              // 9C
 	};
 	static_assert(sizeof(DualValueModifierEffect) == 0xA0);
 }

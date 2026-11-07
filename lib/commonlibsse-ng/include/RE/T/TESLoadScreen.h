@@ -50,8 +50,6 @@ namespace RE
 		TESCondition  conditions;   // 20
 		LoadNIFData*  loadNIFData;  // 28
 		BSFixedString loadingText;  // 30
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESLoadScreen) == 0x38);
 }

@@ -21,8 +21,6 @@ namespace RE
 
 		// members
 		TESRegionList* list;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraRegionList) == 0x18);
 }

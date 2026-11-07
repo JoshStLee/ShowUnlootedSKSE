@@ -31,8 +31,6 @@ namespace RE
 
 		// members
 		TESTexture* icon;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESRegionDataLandscape) == 0x18);
 }

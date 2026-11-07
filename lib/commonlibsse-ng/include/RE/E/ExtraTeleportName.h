@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		BGSMessage* message;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraTeleportName) == 0x18);
 }

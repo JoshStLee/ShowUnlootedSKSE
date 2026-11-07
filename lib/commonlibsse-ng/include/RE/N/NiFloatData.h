@@ -14,7 +14,6 @@ namespace RE
 
 		using KeyType = NiFloatKey::KeyType;
 
-		NiFloatData();
 		~NiFloatData() override;  // 00
 
 		// override (NiObject)
@@ -23,8 +22,11 @@ namespace RE
 		void          SaveBinary(NiStream& a_stream) override;  // 1B
 		bool          IsEqual(NiObject* a_object) override;     // 1C
 
+		static NiFloatData* Create();
+
 		[[nodiscard]] std::uint32_t GetNumKeys() const;
 		NiFloatKey*                 GetAnim(std::uint32_t& a_numKeys, KeyType& a_type, std::uint8_t& a_size) const;
+		void                        ReplaceAnim(NiFloatKey* a_keys, std::uint32_t a_numKeys, KeyType a_type);
 
 		// members
 		std::uint32_t numKeys;  // 10
@@ -34,8 +36,6 @@ namespace RE
 		std::uint8_t  keySize;  // 24
 		std::uint8_t  pad25;    // 25
 		std::uint16_t pad26;    // 26
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiFloatData) == 0x28);
 }

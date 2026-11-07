@@ -2,6 +2,7 @@
 
 #include "RE/N/NiParticles.h"
 #include "RE/N/NiTPointerList.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -48,8 +49,8 @@ namespace RE
 		void          UpdateWorldData(NiUpdateData* a_data);                                                              // 30
 
 		// add
-		virtual void UpdateSystem(float a_time);     // 38 - { return NiParticleSystem::Do_UpdateSystem(a_time); }
-		virtual void Do_UpdateSystem(float a_time);  // 39
+		SKYRIM_REL_VR_VIRTUAL void UpdateSystem(float a_time);     // 38 - { return NiParticleSystem::Do_UpdateSystem(a_time); }
+		SKYRIM_REL_VR_VIRTUAL void Do_UpdateSystem(float a_time);  // 39
 
 		void AddModifier(NiPSysModifier* a_modifier)
 		{
@@ -58,29 +59,12 @@ namespace RE
 			return func(this, a_modifier);
 		}
 
-		[[nodiscard]] inline PARTICLESYSTEM_RUNTIME_DATA& GetParticleSystemRuntimeData() noexcept
-		{
-			return REL::RelocateMember<PARTICLESYSTEM_RUNTIME_DATA>(this, 0x168, 0x1A8);
-		}
-
-		[[nodiscard]] inline const PARTICLESYSTEM_RUNTIME_DATA& GetParticleSystemRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<PARTICLESYSTEM_RUNTIME_DATA>(this, 0x168, 0x1A8);
-		}
-
+		RUNTIME_DATA_ACCESSOR_EX(PARTICLESYSTEM_RUNTIME_DATA, GetParticleSystemRuntimeData, 0x168, 0x1A8);
 		// members
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT;
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(NiParticleSystem) == 0x198);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(NiParticleSystem) == 0x1E0);
-#else
-	static_assert(sizeof(NiParticleSystem) == 0x110);
-#endif
+	STATIC_ASSERT_SIZE(NiParticleSystem, 0x198, 0x198, 0x1D8, 0x110);
 }
 #undef RUNTIME_DATA_CONTENT

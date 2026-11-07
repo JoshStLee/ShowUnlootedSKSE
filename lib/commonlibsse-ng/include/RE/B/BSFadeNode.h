@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RE/N/NiNode.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -52,32 +53,19 @@ namespace RE
 #ifndef SKYRIM_CROSS_VR
 		// The following are virtual functions past the point where VR compatibility breaks.
 		void UpdateSelectedDownwardPass(NiUpdateData& a_data, std::uint32_t a_arg2) override;  // 2D
-		void OnVisible(NiCullingProcess& a_process) override;                                  // 34
+		void OnVisible(NiCullingProcess& a_process, std::int32_t a_alphaGroupIndex) override;  // 34
 #endif
 
 		// add
 		SKYRIM_REL_VR_VIRTUAL BSTreeNode*     AsTreeNode();      // 3E - { return 0; }
 		SKYRIM_REL_VR_VIRTUAL BSLeafAnimNode* AsLeafAnimNode();  // 3F - { return 0; }
 
-		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x128, 0x150);
-		}
-
-		[[nodiscard]] inline const RUNTIME_DATA& GetRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x128, 0x150);
-		}
-
+		RUNTIME_DATA_ACCESSOR(RUNTIME_DATA, 0x128, 0x150);
 		// members
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT  // 128, 150
 #endif
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(BSFadeNode) == 0x158);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(BSFadeNode) == 0x180);
-#endif
+	STATIC_ASSERT_SIZE(BSFadeNode, 0x158, 0x158, 0x180, 0x110);
 }
 #undef RUNTIME_DATA_CONTENT

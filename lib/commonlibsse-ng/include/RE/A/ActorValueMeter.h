@@ -20,8 +20,6 @@ namespace RE
 		// members
 		ActorValue    actorValue;  // 48
 		std::uint32_t pad4C;       // 4C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ActorValueMeter) == 0x50);
 }

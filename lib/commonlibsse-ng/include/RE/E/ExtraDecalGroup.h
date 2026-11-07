@@ -21,8 +21,6 @@ namespace RE
 
 		// members
 		BGSDecalGroup* decalGroup;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraDecalGroup) == 0x18);
 }

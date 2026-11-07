@@ -49,8 +49,6 @@ namespace RE
 		REX::EnumSet<CollectionType, std::uint8_t> collectionType;  // 29
 		std::uint16_t                              pad2A;           // 2A
 		std::uint32_t                              pad2C;           // 2C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpShapeCollection) == 0x30);
 }

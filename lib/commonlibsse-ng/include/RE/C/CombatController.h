@@ -6,6 +6,7 @@
 #include "RE/B/BSTArray.h"
 #include "RE/C/CombatState.h"
 #include "RE/N/NiSmartPointer.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -22,6 +23,12 @@ namespace RE
 	class CombatController
 	{
 	public:
+		enum class COMBAT_STANCE : uint8_t
+		{
+			None,
+			Sneak
+		};
+
 		struct RUNTIME_DATA
 		{
 #define RUNTIME_DATA_CONTENT                                                                  \
@@ -48,35 +55,15 @@ namespace RE
 			AE_RUNTIME_DATA_CONTENT
 		};
 
-		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
-		{
-			return REL::RelocateMemberIfNewer<RUNTIME_DATA>(SKSE::RUNTIME_SSE_1_6_629, this, 0x68, 0x70);
-		}
-
-		[[nodiscard]] inline const RUNTIME_DATA& GetRuntimeData() const noexcept
-		{
-			return REL::RelocateMemberIfNewer<RUNTIME_DATA>(SKSE::RUNTIME_SSE_1_6_629, this, 0x68, 0x70);
-		}
-
-		[[nodiscard]] inline AE_RUNTIME_DATA* GetAERuntimeData() noexcept
-		{
-			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
-				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_6_629) != std::strong_ordering::less) {
-					return REL::RelocateMember<AE_RUNTIME_DATA*>(this, 0x68);
-				}
-			}
-			return nullptr;
-		}
-
-		[[nodiscard]] inline const AE_RUNTIME_DATA& GetAERuntimeData() const noexcept
-		{
-			return this->GetAERuntimeData();
-		}
+		RUNTIME_DATA_ACCESSOR_VERSIONED(RUNTIME_DATA, SKSE::RUNTIME_SSE_1_6_629, 0x68, 0x70);
+		AE_ONLY_POINTER_ACCESSOR_VERSIONED(AE_RUNTIME_DATA, GetAERuntimeData, SKSE::RUNTIME_SSE_1_6_629, 0x68);
 
 		[[nodiscard]] bool IsFleeing() const
 		{
 			return state->isFleeing;
 		}
+		bool CheckCombatArea(Actor* atatcker) const;
+		bool CheckStraightPath(NiPoint3& dst, float dist, float min_dist = -1.0f) const;
 
 		// members
 		CombatGroup*                   combatGroup;           // 00
@@ -87,7 +74,7 @@ namespace RE
 		ActorHandle                    attackerHandle;        // 28
 		ActorHandle                    targetHandle;          // 2C
 		ActorHandle                    previousTargetHandle;  // 30
-		std::uint8_t                   unk34;                 // 34
+		COMBAT_STANCE                  stance;                // 34
 		bool                           startedCombat;         // 35
 		std::uint8_t                   unk36;                 // 36
 		std::uint8_t                   unk37;                 // 37
@@ -103,9 +90,6 @@ namespace RE
 		AE_RUNTIME_DATA_CONTENT;
 #endif
 		RUNTIME_DATA_CONTENT;
-
-	private:
-		KEEP_FOR_RE()
 	};
 #if defined(EXCLUSIVE_SKYRIM_AE)
 	static_assert(sizeof(CombatController) == 0xE0);
@@ -113,3 +97,6 @@ namespace RE
 	static_assert(sizeof(CombatController) == 0xD8);
 #endif
 }
+
+#undef RUNTIME_DATA_CONTENT
+#undef AE_RUNTIME_DATA_CONTENT

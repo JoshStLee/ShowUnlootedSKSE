@@ -75,8 +75,6 @@ namespace RE
 		std::uint32_t               pad14;         // 14
 		void*                       unk18;         // 18
 		TESGlobal*                  chanceGlobal;  // 20 - LVLG
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESLeveledList) == 0x28);
 }

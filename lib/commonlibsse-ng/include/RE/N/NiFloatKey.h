@@ -17,8 +17,6 @@ namespace RE
 
 	protected:
 		float _value;  // 04
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiFloatKey) == 0x8);
 }

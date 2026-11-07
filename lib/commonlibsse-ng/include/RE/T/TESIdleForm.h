@@ -52,13 +52,13 @@ namespace RE
 		~TESIdleForm() override;  // 00
 
 		// override (TESForm)
-		void        InitializeData() override;                                          // 04
-		void        ClearData() override;                                               // 05
-		bool        Load(TESFile* a_mod) override;                                      // 06
-		TESForm*    CreateDuplicateForm(bool a_createEditorID, void* a_arg2) override;  // 09
-		void        InitItemImpl() override;                                            // 13
-		const char* GetFormEditorID() const override;                                   // 32 - { return formEditorID.c_str(); }
-		bool        SetFormEditorID(const char* a_str) override;                        // 33
+		void        InitializeData() override;                                                                          // 04
+		void        ClearData() override;                                                                               // 05
+		bool        Load(TESFile* a_mod) override;                                                                      // 06
+		TESForm*    CreateDuplicateForm(bool a_createEditorID, NiTPointerMap<TESForm*, TESForm*>* a_copyMap) override;  // 09
+		void        InitItemImpl() override;                                                                            // 13
+		const char* GetFormEditorID() const override;                                                                   // 32 - { return formEditorID.c_str(); }
+		bool        SetFormEditorID(const char* a_str) override;                                                        // 33
 
 		bool CheckConditions(Actor* a_actor, TESObjectREFR* a_target, bool a_checkParentIdle)
 		{
@@ -77,8 +77,6 @@ namespace RE
 		BSFixedString animFileName;   // 48 - DNAM
 		BSFixedString animEventName;  // 50 - ENAM
 		BSString      formEditorID;   // 58 - EDID
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESIdleForm) == 0x68);
 }

@@ -3,11 +3,11 @@
 #include "RE/H/hkArray.h"
 #include "RE/H/hkRefPtr.h"
 #include "RE/H/hkReferencedObject.h"
+#include "RE/H/hkbVariableBindingSet.h"
 
 namespace RE
 {
 	class hkRefVariant;
-	class hkbVariableBindingSet;
 
 	class hkbBindable : public hkReferencedObject
 	{
@@ -27,8 +27,6 @@ namespace RE
 		std::uint8_t                    pad29;               // 29
 		std::uint16_t                   pad2A;               // 2A
 		std::uint32_t                   pad2C;               // 2C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkbBindable) == 0x30);
 }

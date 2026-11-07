@@ -24,8 +24,6 @@ namespace RE
 
 		// members
 		char* value;  // 18
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiStringExtraData) == 0x20);
 }

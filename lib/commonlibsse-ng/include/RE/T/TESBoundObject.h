@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RE/B/BGSDestructibleObjectForm.h"
 #include "RE/B/BSString.h"
 #include "RE/F/FormTypes.h"
 #include "RE/N/NiSmartPointer.h"
@@ -17,8 +18,6 @@ namespace RE
 		std::int16_t x;  // 0
 		std::int16_t y;  // 2
 		std::int16_t z;  // 4
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiNPShortPoint3) == 0x6);
 
@@ -46,6 +45,13 @@ namespace RE
 		NiAVObject* Clone3D(TESObjectREFR* a_ref, bool a_arg3) override;                                                                                                      // 40
 		bool        ReplaceModel() override;                                                                                                                                  // 44
 
+		[[nodiscard]] BGSDestructibleObjectForm* GetDestructibleForm() const
+		{
+			using func_t = decltype(&TESBoundObject::GetDestructibleForm);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(14055, 14152) };
+			return func(this);
+		}
+
 		// add
 		virtual void                        SetObjectVoiceType(BGSVoiceType* a_voiceType);                                                 // 48 - { return; }
 		[[nodiscard]] virtual BGSVoiceType* GetObjectVoiceType() const;                                                                    // 49 - { return 0; }
@@ -62,8 +68,6 @@ namespace RE
 		// members
 		BOUND_DATA    boundData;  // 20 - OBND
 		std::uint32_t pad2C;      // 2C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESBoundObject) == 0x30);
 }

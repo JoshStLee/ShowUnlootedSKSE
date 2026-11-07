@@ -16,8 +16,6 @@ namespace RE
 		inline static constexpr auto VTABLE = VTABLE_ICellAttachDetachEventSource;
 
 		virtual ~ICellAttachDetachEventSource();  // 00
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ICellAttachDetachEventSource) == 0x60);
 }

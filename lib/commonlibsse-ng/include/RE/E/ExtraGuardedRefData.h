@@ -29,8 +29,6 @@ namespace RE
 
 		// members
 		BSTArray<GuardInfo> guards;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraGuardedRefData) == 0x28);
 }

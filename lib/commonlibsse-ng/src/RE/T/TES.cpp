@@ -15,6 +15,12 @@ namespace RE
 		return *singleton;
 	}
 
+	std::int32_t& TES::GetGridsToLoadCopy()
+	{
+		static REL::Relocation<std::int32_t*> gridsToLoadCopy{ RELOCATION_ID(527644, 414596) };
+		return *gridsToLoadCopy;
+	}
+
 	void TES::ForEachCell(std::function<void(TESObjectCELL*)> a_callback)
 	{
 		if (interiorCell) {
@@ -162,6 +168,13 @@ namespace RE
 		}
 	}
 
+	void TES::CancelMasterFileLoads()
+	{
+		using func_t = decltype(&TES::CancelMasterFileLoads);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(13188, 13333) };
+		func(this);
+	}
+
 	TESObjectCELL* TES::GetCell(const NiPoint3& a_position) const
 	{
 		using func_t = decltype(&TES::GetCell);
@@ -193,7 +206,7 @@ namespace RE
 	float TES::GetWaterHeight(const NiPoint3& a_pos, TESObjectCELL* a_cell) const
 	{
 		using func_t = decltype(&TES::GetWaterHeight);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(13212, 13358) };
+		static REL::Relocation<func_t> func{ RELOCATION_ID(13212, AE_CHECK(SKSE::RUNTIME_SSE_1_7_99, 13358, 523463)) };
 		return func(this, a_pos, a_cell);
 	}
 
@@ -208,6 +221,20 @@ namespace RE
 	{
 		using func_t = decltype(&TES::PurgeBufferedCells);
 		static REL::Relocation<func_t> func{ RELOCATION_ID(13159, 13299) };
-		return func(this);
+		func(this);
+	}
+
+	void TES::ResumeMasterFileLoads()
+	{
+		using func_t = decltype(&TES::ResumeMasterFileLoads);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(13189, 13334) };
+		func(this);
+	}
+
+	void TES::SetCurrentCell(TESObjectCELL* a_cell, const NiPoint3& a_position, float a_unk4)
+	{
+		using func_t = decltype(&TES::SetCurrentCell);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(13171, 13316) };
+		return func(this, a_cell, a_position, a_unk4);
 	}
 }

@@ -51,8 +51,6 @@ namespace RE
 
 		// members
 		BGSDualCastDataDEF data;  // 30 - DATA
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSDualCastData) == 0x60);
 }

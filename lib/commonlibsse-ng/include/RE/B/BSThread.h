@@ -1,5 +1,6 @@
 #pragma once
 
+#include "REL/Common.h"
 #include "REX/W32/BASE.h"
 
 namespace RE
@@ -13,8 +14,8 @@ namespace RE
 		virtual ~BSThread();  // 00
 
 		// add
-		virtual void Unk_01(void);  // 01 - { return 0; }
-		virtual void Unk_02(void);  // 02 - { return; }
+		virtual std::uint32_t ThreadProc();  // 01 - { return 0; }
+		virtual void          Unk_02(void);  // 02 - { return; }
 
 		// members
 		REX::W32::CRITICAL_SECTION lock;           // 08
@@ -26,8 +27,12 @@ namespace RE
 		std::uint8_t               pad49;          // 49
 		std::uint16_t              pad4A;          // 4A
 		std::uint32_t              pad4C;          // 4C
-	private:
-		KEEP_FOR_RE()
+#if defined(EXCLUSIVE_SKYRIM_VR)
+		std::uint8_t  unkVr50;  // 50 - written by the VR constructor
+		std::uint8_t  padVr51;  // 51
+		std::uint16_t padVr52;  // 52
+		std::uint32_t padVr54;  // 54
+#endif
 	};
-	static_assert(sizeof(BSThread) == 0x50);
+	STATIC_ASSERT_SIZE(BSThread, 0x50, 0x58);
 }

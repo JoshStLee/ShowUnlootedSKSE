@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RE/B/BSSimpleList.h"
 #include "RE/C/CommandTable.h"
 #include "RE/F/FormTypes.h"
 #include "RE/T/TESForm.h"
@@ -16,8 +17,6 @@ namespace RE
 	class ScriptCompiler
 	{
 	public:
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ScriptCompiler) == 0x1);
 
@@ -76,7 +75,6 @@ namespace RE
 
 	private:
 		void CompileAndRun_Impl(ScriptCompiler* a_compiler, COMPILER_NAME a_type, TESObjectREFR* a_targetRef);
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(Script) == 0x80);
 }

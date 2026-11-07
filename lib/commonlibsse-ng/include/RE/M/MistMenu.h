@@ -5,7 +5,9 @@
 #include "RE/M/MenuEventHandler.h"
 #include "RE/N/NiColor.h"
 #include "RE/N/NiMatrix3.h"
+#include "RE/N/NiPoint3.h"
 #include "RE/S/SimpleAnimationGraphManagerHolder.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -56,13 +58,13 @@ namespace RE
 	std::uint32_t                   unk0A0;                        /* 0A0 */                            \
 	std::uint32_t                   unk0A4;                        /* 0A4 */                            \
 	std::uint64_t                   unk0A8;                        /* 0A8 */                            \
-	NiPointer<NiNode>               mistModel;                     /* 0B0 - smart ptr */                \
+	NiPointer<NiNode>               mistModel;                     /* 0B0 */                            \
 	ModelDBHandle                   mistModelDBHandle;             /* 0B8 */                            \
 	ModelDBHandle                   loadScreenModelHandle;         /* 0C0 */                            \
 	NiPointer<BSFadeNode>           cameraPath;                    /* 0C8 - parent of cameraPathNode */ \
-	NiPointer<NiNode>               cameraPathNode;                /* 0D0 - smart ptr */                \
-	NiPointer<NiControllerSequence> cameraPathSequence;            /* 0D8 - smart ptr */                \
-	NiPointer<NiControllerManager>  cameraPathController;          /* 0E0 - smart ptr */                \
+	NiPointer<NiNode>               cameraPathNode;                /* 0D0 */                            \
+	NiPointer<NiControllerSequence> cameraPathSequence;            /* 0D8 */                            \
+	NiPointer<NiControllerManager>  cameraPathController;          /* 0E0 */                            \
 	BSLightingShaderProperty*       logoShaderProperty;            /* 0E8 - default logo only */        \
 	NiPointer<BSFadeNode>           loadScreenModel;               /* 0F0 */                            \
 	ImageSpaceBaseData*             originalImageSpace;            /* 0F8 - imagespacedata? */          \
@@ -85,6 +87,33 @@ namespace RE
 		};
 		static_assert(sizeof(RUNTIME_DATA) == 0xE8);
 
+		// VR-only tail: model loads async (SE/AE sync), so SetupLoadScreenModel3D stashes the transform here until AdvanceMovie can replay InitLoadScreen3D.
+		struct VR_RUNTIME_DATA
+		{
+#define VR_RUNTIME_DATA_CONTENT                                                                              \
+	std::uint32_t     unk150;                  /* 150 - ctor default 0x3f800000 (1.0f); no consumer found */ \
+	std::uint32_t     pad154;                  /* 154 */                                                     \
+	NiPointer<NiNode> loadScreen3DModelNode;   /* 158 */                                                     \
+	NiPointer<NiNode> loadScreen3DSceneNode;   /* 160 */                                                     \
+	bool              deferredSetupNeeded;     /* 168 */                                                     \
+	std::uint8_t      pad169[0x3];             /* 169 */                                                     \
+	float             stashedModelScale;       /* 16C */                                                     \
+	NiPoint3          stashedRotateOffset;     /* 170 */                                                     \
+	NiPoint3          stashedTranslateOffset;  /* 17C */                                                     \
+	NiPoint3          unk188;                  /* 188 - ctor-zeroed; no consumer found */                    \
+	NiPoint3          unk194;                  /* 194 - ctor-zeroed; no consumer found */                    \
+	bool              cameraPathActive;        /* 1A0 */                                                     \
+	bool              loadScreenModelReady;    /* 1A1 */                                                     \
+	bool              loadScreen3DInitialized; /* 1A2 */                                                     \
+	bool              suppressPostDisplay;     /* 1A3 */                                                     \
+	bool              cameraSequenceEnabled;   /* 1A4 */                                                     \
+	bool              resetCameraTimer;        /* 1A5 */                                                     \
+	std::uint8_t      pad1A6[2];               /* 1A6 */
+
+			VR_RUNTIME_DATA_CONTENT
+		};
+		static_assert(sizeof(VR_RUNTIME_DATA) == 0x58);
+
 		~MistMenu() override;  // 00
 
 		// override (IMenu)
@@ -94,40 +123,36 @@ namespace RE
 
 		// override (MenuEventHandler)
 #ifndef SKYRIM_CROSS_VR
-		bool CanProcess(InputEvent* a_event) override;              // 01
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#endif
+#ifdef EXCLUSIVE_SKYRIM_VR
 		bool ProcessThumbstick(ThumbstickEvent* a_event) override;  // 03
 		bool ProcessMouseMove(MouseMoveEvent* a_event) override;    // 04
 		bool ProcessButton(ButtonEvent* a_event) override;          // 05
 #endif
 
-		[[nodiscard]] SimpleAnimationGraphManagerHolder* AsSimpleAnimationGraphManagerHolder() noexcept
+#ifndef SKYRIM_CROSS_VR
+		RUNTIME_CAST_ACCESSOR(SimpleAnimationGraphManagerHolder, AsSimpleAnimationGraphManagerHolder, 0x30, 0x40);
+		RUNTIME_CAST_ACCESSOR(MenuEventHandler, AsMenuEventHandler, 0x48, 0x58);
+#endif
+
+		RUNTIME_DATA_ACCESSOR(RUNTIME_DATA, 0x58, 0x68);
+
+		// Returns nullptr on SE/AE; uses absolute VR offset so it works in cross-VR builds too.
+		[[nodiscard]] inline VR_RUNTIME_DATA* GetVRRuntimeData() noexcept
 		{
-			return &REL::RelocateMember<SimpleAnimationGraphManagerHolder>(this, 0x30, 0x40);
+			if SKYRIM_REL_VR_CONSTEXPR (REL::Module::IsVR()) {
+				return &REL::RelocateMember<VR_RUNTIME_DATA>(this, 0, 0x150);
+			}
+			return nullptr;
 		}
 
-		[[nodiscard]] const SimpleAnimationGraphManagerHolder* AsSimpleAnimationGraphManagerHolder() const noexcept
+		[[nodiscard]] inline const VR_RUNTIME_DATA* GetVRRuntimeData() const noexcept
 		{
-			return const_cast<MistMenu*>(this)->AsSimpleAnimationGraphManagerHolder();
-		}
-
-		[[nodiscard]] MenuEventHandler* AsMenuEventHandler() noexcept
-		{
-			return &REL::RelocateMember<MenuEventHandler>(this, 0x48, 0x58);
-		}
-
-		[[nodiscard]] const MenuEventHandler* AsMenuEventHandler() const noexcept
-		{
-			return const_cast<MistMenu*>(this)->AsMenuEventHandler();
-		}
-
-		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x58, 0x68);
-		}
-
-		[[nodiscard]] inline const RUNTIME_DATA& GetRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x58, 0x68);
+			if SKYRIM_REL_VR_CONSTEXPR (REL::Module::IsVR()) {
+				return &REL::RelocateMember<VR_RUNTIME_DATA>(this, 0, 0x150);
+			}
+			return nullptr;
 		}
 
 		[[nodiscard]] static MistMenu* GetSingleton()
@@ -139,16 +164,12 @@ namespace RE
 		// members
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT;  // 58, 68
+#	if defined(EXCLUSIVE_SKYRIM_VR)
+		VR_RUNTIME_DATA_CONTENT;  // 150
+#	endif
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(MistMenu) == 0x140);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(MistMenu) == 0x150);
-#else
-	static_assert(sizeof(MistMenu) == 0x30);
-#endif
+	STATIC_ASSERT_SIZE(MistMenu, 0x140, 0x140, 0x1A8, 0x30);
 }
 #undef RUNTIME_DATA_CONTENT
+#undef VR_RUNTIME_DATA_CONTENT

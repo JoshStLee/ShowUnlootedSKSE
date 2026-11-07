@@ -21,8 +21,6 @@ namespace RE
 		std::uint64_t unk18;  // 18
 		std::uint64_t unk20;  // 20
 		TESForm*      form;   // 28
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSSaveFormBuffer) == 0x30);
 }

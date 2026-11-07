@@ -15,8 +15,6 @@ namespace RE
 
 		// members
 		hkpCharacterState* registeredState[hkpCharacterStateType::kTotal];  // 00
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpCharacterStateManager) == 0x68);
 }

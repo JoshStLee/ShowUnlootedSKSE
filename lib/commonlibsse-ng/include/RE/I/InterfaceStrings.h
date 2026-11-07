@@ -2,6 +2,7 @@
 
 #include "RE/B/BSFixedString.h"
 #include "RE/B/BSTSingleton.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -44,35 +45,37 @@ namespace RE
 
 		struct AE_RUNTIME_DATA
 		{
+// Offsets bumped for loginMenu addition
 #define AE_RUNTIME_DATA_CONTENT                                                    \
 	BSFixedString creationClubMenu;        /* 198 - "Creation Club Menu */         \
-	BSFixedString marketplaceMenu;         /* 1A0 - "Marketplace Menu */           \
-	BSFixedString titleSequenceMenu;       /* 1A8 - "TitleSequence Menu */         \
-	BSFixedString consoleNativeUIMenu;     /* 1B0 - "Console Native UI Menu */     \
-	BSFixedString kinectMenu;              /* 1B8 - "Kinect Menu */                \
-	BSFixedString loadWaitSpinner;         /* 1C0 - "LoadWaitSpinner */            \
-	BSFixedString streamingInstallMenu;    /* 1C8 - "StreamingInstallMenu */       \
-	BSFixedString textWidget;              /* 1D0 - "TextWidget */                 \
-	BSFixedString buttonBarWidget;         /* 1D8 - "ButtonBarWidget */            \
-	BSFixedString graphWidget;             /* 1E0 - "GraphWidget */                \
-	BSFixedString textureWidget;           /* 1E8 - "TextureWidget */              \
-	BSFixedString uiMenuOK;                /* 1F0 - "UIMenuOK */                   \
-	BSFixedString uiMenuCancel;            /* 1F8 - "UIMenuCancel */               \
-	BSFixedString showText;                /* 200 - "Show Text */                  \
-	BSFixedString hideText;                /* 208 - "Hide Text */                  \
-	BSFixedString showList;                /* 210 - "Show List */                  \
-	BSFixedString voiceReady;              /* 218 - "Voice Ready */                \
-	BSFixedString dmfoStr;                 /* 220 - "DMFOStr */                    \
-	BSFixedString showJournal;             /* 228 - "Show Journal */               \
-	BSFixedString journalSettingsSaved;    /* 230 - "Journal Settings Saved */     \
-	BSFixedString closeMenu;               /* 238 - "CloseMenu */                  \
-	BSFixedString closingAllMenus;         /* 240 - "Closing All Menus */          \
-	BSFixedString refreshMenu;             /* 248 - "RefreshMenu */                \
-	BSFixedString cancelLoading;           /* 250 - "CancelLoading */              \
-	BSFixedString menuTextureDegradeEvent; /* 258 - "Menu Texture Degrade Event */ \
-	BSFixedString userSettingsLoaded;      /* 260 - "UserSettingsLoaded */         \
-	BSFixedString activityStarted;         /* 268 - "ActivityStarted */            \
-	BSFixedString diamondMarker;           /* 270 - "<img src='DiamondMarker' width='10' height='15' align='baseline' vspace='5 */
+	BSFixedString loginMenu;               /* 1A0 - "Login Menu" */                \
+	BSFixedString marketplaceMenu;         /* 1A8 - "Marketplace Menu */           \
+	BSFixedString titleSequenceMenu;       /* 1B0 - "TitleSequence Menu */         \
+	BSFixedString consoleNativeUIMenu;     /* 1B8 - "Console Native UI Menu */     \
+	BSFixedString kinectMenu;              /* 1C0 - "Kinect Menu */                \
+	BSFixedString loadWaitSpinner;         /* 1C8 - "LoadWaitSpinner */            \
+	BSFixedString streamingInstallMenu;    /* 1D0 - "StreamingInstallMenu */       \
+	BSFixedString textWidget;              /* 1D8 - "TextWidget */                 \
+	BSFixedString buttonBarWidget;         /* 1E0 - "ButtonBarWidget */            \
+	BSFixedString graphWidget;             /* 1E8 - "GraphWidget */                \
+	BSFixedString textureWidget;           /* 1F0 - "TextureWidget */              \
+	BSFixedString uiMenuOK;                /* 1F8 - "UIMenuOK */                   \
+	BSFixedString uiMenuCancel;            /* 200 - "UIMenuCancel */               \
+	BSFixedString showText;                /* 208 - "Show Text */                  \
+	BSFixedString hideText;                /* 210 - "Hide Text */                  \
+	BSFixedString showList;                /* 218 - "Show List */                  \
+	BSFixedString voiceReady;              /* 220 - "Voice Ready */                \
+	BSFixedString dmfoStr;                 /* 228 - "DMFOStr */                    \
+	BSFixedString showJournal;             /* 230 - "Show Journal */               \
+	BSFixedString journalSettingsSaved;    /* 238 - "Journal Settings Saved */     \
+	BSFixedString closeMenu;               /* 240 - "CloseMenu */                  \
+	BSFixedString closingAllMenus;         /* 248 - "Closing All Menus */          \
+	BSFixedString refreshMenu;             /* 250 - "RefreshMenu */                \
+	BSFixedString cancelLoading;           /* 258 - "CancelLoading */              \
+	BSFixedString menuTextureDegradeEvent; /* 260 - "Menu Texture Degrade Event */ \
+	BSFixedString userSettingsLoaded;      /* 268 - "UserSettingsLoaded */         \
+	BSFixedString activityStarted;         /* 270 - "ActivityStarted */            \
+	BSFixedString diamondMarker;           /* 278 - "<img src='DiamondMarker' width='10' height='15' align='baseline' vspace='5 */
 			AE_RUNTIME_DATA_CONTENT
 		};
 
@@ -113,36 +116,9 @@ namespace RE
 			VR_RUNTIME_DATA_CONTENT
 		};
 
-		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x198, 0x198);
-		}
-
-		[[nodiscard]] inline const RUNTIME_DATA& GetRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x198, 0x198);
-		}
-
-		[[nodiscard]] inline AE_RUNTIME_DATA& GetAERuntimeData() noexcept
-		{
-			return REL::RelocateMember<AE_RUNTIME_DATA>(this, 0x198, 0x198);
-		}
-
-		[[nodiscard]] inline const AE_RUNTIME_DATA& GetAERuntimeData() const noexcept
-		{
-			return REL::RelocateMember<AE_RUNTIME_DATA>(this, 0x198, 0x198);
-		}
-
-		[[nodiscard]] inline VR_RUNTIME_DATA& GetVRRuntimeData() noexcept
-		{
-			return REL::RelocateMember<VR_RUNTIME_DATA>(this, 0x198, 0x198);
-		}
-
-		[[nodiscard]] inline const VR_RUNTIME_DATA& GetVRRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<VR_RUNTIME_DATA>(this, 0x198, 0x198);
-		}
-
+		RUNTIME_DATA_ACCESSOR(RUNTIME_DATA, 0x198, 0x198);
+		RUNTIME_DATA_ACCESSOR_EX(AE_RUNTIME_DATA, GetAERuntimeData, 0x198, 0x198);
+		RUNTIME_DATA_ACCESSOR_EX(VR_RUNTIME_DATA, GetVRRuntimeData, 0x198, 0x198);
 		// members
 		std::uint8_t  pad001;                  // 001
 		std::uint16_t pad002;                  // 002
@@ -207,14 +183,12 @@ namespace RE
 		VR_RUNTIME_DATA_CONTENT;
 #else
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
 #if defined(EXCLUSIVE_SKYRIM_FLAT)
 #	ifndef ENABLE_SKYRIM_AE
 	static_assert(sizeof(InterfaceStrings) == 0x260);
 #	else
-	static_assert(sizeof(InterfaceStrings) == 0x278);
+	static_assert(sizeof(InterfaceStrings) == 0x280);
 #	endif
 #elif defined(EXCLUSIVE_SKYRIM_VR)
 	static_assert(sizeof(InterfaceStrings) == 0x290);

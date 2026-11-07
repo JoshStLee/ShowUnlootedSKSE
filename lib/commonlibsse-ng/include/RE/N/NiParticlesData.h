@@ -2,6 +2,7 @@
 
 #include "RE/N/NiBound.h"
 #include "RE/N/NiObject.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -60,29 +61,16 @@ namespace RE
 		virtual void          RemoveParticle(std::uint16_t a_particleCount);      // 28
 		virtual void          CalculateNormals();                                 // 29 - { return; }
 
-		[[nodiscard]] inline PARTICLES_RUNTIME_DATA& GetParticlesRuntimeData() noexcept
-		{
-			return REL::RelocateMember<PARTICLES_RUNTIME_DATA>(this, 0x10, 0x28);
-		}
-
-		[[nodiscard]] inline const PARTICLES_RUNTIME_DATA& GetParticlesRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<PARTICLES_RUNTIME_DATA>(this, 0x10, 0x28);
-		}
-		// members
+		RUNTIME_DATA_ACCESSOR_EX(PARTICLES_RUNTIME_DATA, GetParticlesRuntimeData, 0x10, 0x28);
 
 #ifndef SKYRIM_CROSS_VR
+#	ifdef EXCLUSIVE_SKYRIM_VR
+		// VR inserts its runtime data at 0x28, which is what the accessor above assumes.
+		std::uint8_t unkVr10[0x18];  // 10
+#	endif
 		RUNTIME_DATA_CONTENT;
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(NiParticlesData) == 0x90);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(NiParticlesData) == 0x90);
-#else
-	static_assert(sizeof(NiParticlesData) == 0x10);
-#endif
+	STATIC_ASSERT_SIZE(NiParticlesData, 0x90, 0x90, 0xA8, 0x10);
 }
 #undef RUNTIME_DATA_CONTENT

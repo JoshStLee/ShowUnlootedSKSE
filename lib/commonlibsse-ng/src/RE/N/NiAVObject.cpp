@@ -14,6 +14,7 @@
 #include "RE/B/bhkRigidBody.h"
 #include "RE/H/hkpRigidBody.h"
 #include "RE/N/NiColor.h"
+#include "RE/N/NiCullingProcess.h"
 #include "RE/N/NiNode.h"
 #include "RE/N/NiProperty.h"
 #include "RE/N/NiRTTI.h"
@@ -21,13 +22,6 @@
 
 namespace RE
 {
-	NiAVObject* NiAVObject::Clone()
-	{
-		using func_t = decltype(&NiAVObject::Clone);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(68835, 70187) };
-		return func(this);
-	}
-
 	void NiAVObject::CullGeometry(bool a_cull)
 	{
 		BSVisit::TraverseScenegraphGeometries(this, [&](BSGeometry* a_geo) -> BSVisit::BSVisitControl {
@@ -79,8 +73,8 @@ namespace RE
 		BSGeometry* firstGeometry = nullptr;
 
 		BSVisit::TraverseScenegraphGeometries(this, [&](BSGeometry* a_geometry) -> BSVisit::BSVisitControl {
-			auto effect = a_geometry->GetGeometryRuntimeData().properties[BSGeometry::States::kEffect];
-			auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(effect.get());
+			auto shaderProperty = a_geometry->GetGeometryRuntimeData().shaderProperty;
+			auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(shaderProperty.get());
 			if (lightingShader) {
 				if (a_type == BSShaderMaterial::Feature::kNone) {
 					firstGeometry = a_geometry;
@@ -143,8 +137,8 @@ namespace RE
 		bool hasShaderType = false;
 
 		BSVisit::TraverseScenegraphGeometries(this, [&](BSGeometry* a_geometry) -> BSVisit::BSVisitControl {
-			auto effect = a_geometry->GetGeometryRuntimeData().properties[BSGeometry::States::kEffect];
-			auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(effect.get());
+			auto shaderProp = a_geometry->GetGeometryRuntimeData().shaderProperty;
+			auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(shaderProp.get());
 			if (lightingShader) {
 				auto material = lightingShader->material;
 				if (material && material->GetFeature() == a_type) {
@@ -200,8 +194,8 @@ namespace RE
 			using Flag8 = BSShaderProperty::EShaderPropertyFlag8;
 			using Feature = BSShaderMaterial::Feature;
 
-			auto effect = a_geometry->GetGeometryRuntimeData().properties[BSGeometry::States::kEffect];
-			auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(effect.get());
+			auto shaderProp = a_geometry->GetGeometryRuntimeData().shaderProperty;
+			auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(shaderProp.get());
 			if (lightingShader) {
 				if (lightingShader->flags.any(Flag::kSkinned) || lightingShader->flags.any(Flag::kTreeAnim) || lightingShader->flags.any(Flag::kBackLighting)) {
 					return BSVisit::BSVisitControl::kContinue;
@@ -231,6 +225,13 @@ namespace RE
 		return result;
 	}
 
+	void NiAVObject::SetRefraction(bool a_set, float a_power, bool a_recurse)
+	{
+		using func_t = decltype(&NiAVObject::SetRefraction);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(99868, 106513) };
+		return func(this, a_set, a_power, a_recurse);
+	}
+
 	void NiAVObject::TintScenegraph(const NiColorA& a_color)
 	{
 		auto                                gState = BSGraphics::State::GetSingleton();
@@ -239,8 +240,7 @@ namespace RE
 		newShaderData->baseTexture = gState->GetRuntimeData().defaultTextureWhite;
 
 		BSVisit::TraverseScenegraphGeometries(this, [&](BSGeometry* a_geometry) -> BSVisit::BSVisitControl {
-			auto effect = a_geometry->GetGeometryRuntimeData().properties[BSGeometry::States::kEffect];
-			auto shaderProp = netimmerse_cast<BSShaderProperty*>(effect.get());
+			auto shaderProp = a_geometry->GetGeometryRuntimeData().shaderProperty.get();
 			if (shaderProp && shaderProp->AcceptsEffectData()) {
 				auto shaderData = shaderProp->effectData;
 				if (!shaderData || shaderData->baseTexture == gState->GetRuntimeData().defaultTextureWhite) {
@@ -262,12 +262,11 @@ namespace RE
 	void NiAVObject::UpdateBodyTint(const NiColor& a_color)
 	{
 		BSVisit::TraverseScenegraphGeometries(this, [&](BSGeometry* a_geometry) -> BSVisit::BSVisitControl {
-			using State = BSGeometry::States;
 			using Feature = BSShaderMaterial::Feature;
 
-			auto effect = a_geometry->GetGeometryRuntimeData().properties[State::kEffect].get();
-			if (effect) {
-				auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(effect);
+			auto shaderProp = a_geometry->GetGeometryRuntimeData().shaderProperty.get();
+			if (shaderProp) {
+				auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(shaderProp);
 				if (lightingShader) {
 					auto material = lightingShader->material;
 					if (material && material->GetFeature() == Feature::kFaceGenRGBTint) {
@@ -284,12 +283,11 @@ namespace RE
 	void NiAVObject::UpdateHairColor(const NiColor& a_color)
 	{
 		BSVisit::TraverseScenegraphGeometries(this, [&](BSGeometry* a_geometry) -> BSVisit::BSVisitControl {
-			using State = BSGeometry::States;
 			using Feature = BSShaderMaterial::Feature;
 
-			auto effect = a_geometry->GetGeometryRuntimeData().properties[State::kEffect].get();
-			if (effect) {
-				auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(effect);
+			auto shaderProp = a_geometry->GetGeometryRuntimeData().shaderProperty.get();
+			if (shaderProp) {
+				auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(shaderProp);
 				if (lightingShader) {
 					auto material = lightingShader->material;
 					if (material && material->GetFeature() == Feature::kHairTint) {
@@ -306,12 +304,11 @@ namespace RE
 	void NiAVObject::UpdateMaterialAlpha(float a_alpha, bool a_doOnlySkin)
 	{
 		BSVisit::TraverseScenegraphGeometries(this, [&](BSGeometry* a_geometry) -> BSVisit::BSVisitControl {
-			using State = BSGeometry::States;
 			using Feature = BSShaderMaterial::Feature;
 
-			auto effect = a_geometry->GetGeometryRuntimeData().properties[State::kEffect].get();
-			if (effect) {
-				auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(effect);
+			auto shaderProp = a_geometry->GetGeometryRuntimeData().shaderProperty.get();
+			if (shaderProp) {
+				auto lightingShader = netimmerse_cast<BSLightingShaderProperty*>(shaderProp);
 				if (lightingShader) {
 					auto material = static_cast<BSLightingShaderMaterialBase*>(lightingShader->material);
 					if (material) {
@@ -407,21 +404,32 @@ namespace RE
 		REL::RelocateVirtual<decltype(&NiAVObject::PostAttachUpdate)>(0x33, 0x34, this);
 	}
 
-	void NiAVObject::OnVisible(NiCullingProcess& a_process)
+	void NiAVObject::OnVisible(NiCullingProcess& a_process, std::int32_t a_alphaGroupIndex)
 	{
-		REL::RelocateVirtual<decltype(&NiAVObject::OnVisible)>(0x34, 0x35, this, a_process);
+		REL::RelocateVirtual<decltype(&NiAVObject::OnVisible)>(0x34, 0x35, this, a_process, a_alphaGroupIndex);
 	}
 #endif
 	BSLightingShaderProperty* NiAVObject::temp_nicast(BSGeometry* a_geometry)
 	{
-		if (auto effect = a_geometry->GetGeometryRuntimeData().properties[BSGeometry::States::kEffect].get(); effect) {
-			if (auto rtti = effect->GetRTTI(); rtti) {
+		if (auto shaderProp = a_geometry->GetGeometryRuntimeData().shaderProperty.get(); shaderProp) {
+			if (auto rtti = shaderProp->GetRTTI(); rtti) {
 				const std::string temp_name(rtti->GetName());
 				if (temp_name == "BSLightingShaderProperty") {
-					return static_cast<RE::BSLightingShaderProperty*>(effect);
+					return static_cast<RE::BSLightingShaderProperty*>(shaderProp);
 				}
 			}
 		}
 		return nullptr;
+	}
+
+	int NiAVObject::IsVisualObjectI()
+	{
+		return *reinterpret_cast<std::int32_t*>(&worldBound.radius);
+	}
+
+	void NiAVObject::Cull(NiCullingProcess* a_culler, const std::int32_t a_alphaGroupIndex)
+	{
+		if (!GetAppCulled())
+			a_culler->Process1(this, a_alphaGroupIndex);
 	}
 }

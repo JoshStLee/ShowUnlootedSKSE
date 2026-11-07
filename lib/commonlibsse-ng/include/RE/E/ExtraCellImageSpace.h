@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		TESImageSpace* imageSpace;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraCellImageSpace) == 0x18);
 }

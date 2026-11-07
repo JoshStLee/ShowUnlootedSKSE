@@ -13,7 +13,5 @@ namespace RE
 		inline static constexpr auto VTABLE = VTABLE_PerkEntryVisitor;
 
 		virtual BSContainer::ForEachResult Visit(BGSPerkEntry* a_perkEntry) = 0;  // 00
-	private:
-		KEEP_FOR_RE()
 	};
 }

@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		TESForm* list;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraLockList) == 0x18);
 }

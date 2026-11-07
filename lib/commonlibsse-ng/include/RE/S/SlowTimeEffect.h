@@ -19,8 +19,6 @@ namespace RE
 
 		// members
 		BSSoundHandle activeSound;  // A0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(SlowTimeEffect) == 0xB0);
 }

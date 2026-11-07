@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		BGSAcousticSpace* space;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraCellAcousticSpace) == 0x18);
 }

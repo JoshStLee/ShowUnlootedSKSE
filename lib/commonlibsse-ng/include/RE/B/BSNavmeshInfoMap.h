@@ -2,10 +2,33 @@
 
 #include "RE/B/BSTEvent.h"
 #include "RE/B/BSTSingleton.h"
+#include "RE/B/BSTSmartPointer.h"
+#include "RE/N/NiPoint3.h"
 
 namespace RE
 {
-	struct BSNavmeshInfo;
+	class BSCompressedNavmeshBounds;
+	class BSNavmesh;
+	class BSPathingCell;
+	class BSPathingDoor;
+
+	struct BSNavmeshInfo
+	{
+	public:
+		std::uint32_t                   navMeshID;            // 00
+		NiPoint3                        approxLocation;       // 04
+		BSTSmartPointer<BSPathingDoor>* connectedDoorsArray;  // 10
+		std::uint32_t*                  adjacentMeshesArray;  // 18
+		std::uint16_t                   connectedDoorCount;   // 20
+		std::uint16_t                   adjacentMeshCount;    // 22
+		float                           preferredPercent;     // 24
+		BSNavmesh*                      navMesh;              // 28
+		BSCompressedNavmeshBounds*      bounds;               // 30
+		BSTSmartPointer<BSPathingCell>  pathingCell;          // 38
+		std::uint16_t                   preferredStartIndex;  // 40
+		std::uint8_t                    uiFlags;              // 42
+	};
+	static_assert(sizeof(BSNavmeshInfo) == 0x48);
 
 	class BSNavmeshInfoMap : public BSTSingletonExplicit<BSNavmeshInfoMap>
 	{
@@ -34,8 +57,6 @@ namespace RE
 		virtual void           GetAllNavMeshInfo(BSTArray<BSNavmeshInfo*>& a_results) = 0;                                       // 03
 		virtual void           BuildListOfConnectedInfos(const BSNavmeshInfo* a_info, BSTArray<BSNavmeshInfo*>& a_results) = 0;  // 04
 		virtual void           ForEach(IVisitor* a_visitor) = 0;                                                                 // 05
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSNavmeshInfoMap) == 0x8);
 }

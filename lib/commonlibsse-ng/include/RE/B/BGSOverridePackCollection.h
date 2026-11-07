@@ -24,8 +24,6 @@ namespace RE
 		BGSListForm* observeCorpseOverRidePackList;  // 10 - OCOR
 		BGSListForm* guardWarnOverRidePackList;      // 18 - GWOR
 		BGSListForm* enterCombatOverRidePackList;    // 20 - ECOR
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSOverridePackCollection) == 0x28);
 }

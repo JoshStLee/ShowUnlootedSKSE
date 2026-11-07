@@ -21,8 +21,6 @@ namespace RE
 
 		// members
 		BSTArray<AITimeStamp> hits;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraFriendHits) == 0x28);
 }

@@ -9,8 +9,6 @@ namespace RE
 	class GASRefCountBase : public GRefCountBaseGC<GFxStatMovieViews::kGFxStatMV_ActionScript_Mem>
 	{
 	public:
-	private:
-		KEEP_FOR_RE()
 	};
 	// size == 0x20
 }

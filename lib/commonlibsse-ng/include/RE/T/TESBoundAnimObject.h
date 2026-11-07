@@ -15,8 +15,6 @@ namespace RE
 		// override (TESBoundObject)
 		bool IsBoundAnimObject() override;              // 3C - { return true; }
 		bool ReplaceModel(const char* a_str) override;  // 4B
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESBoundAnimObject) == 0x30);
 }

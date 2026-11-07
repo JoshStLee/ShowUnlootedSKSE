@@ -40,8 +40,6 @@ namespace RE
 		// members
 		MATERIAL_ID   materialID;  // 20
 		std::uint32_t filterInfo;  // 24
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(bhkShape) == 0x28);
 }

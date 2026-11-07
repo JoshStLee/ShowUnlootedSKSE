@@ -12,8 +12,6 @@ namespace RE
 
 		// add
 		[[nodiscard]] virtual TESObjectCELL* GetSaveParentCell() = 0;  // 01
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESChildCell) == 0x8);
 }

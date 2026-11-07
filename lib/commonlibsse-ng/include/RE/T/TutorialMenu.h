@@ -1,7 +1,9 @@
 #pragma once
 
+#include "RE/B/BGSDefaultObjectManager.h"
 #include "RE/G/GFxValue.h"
 #include "RE/I/IMenu.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -12,6 +14,7 @@ namespace RE
 	{
 	public:
 		inline static constexpr auto      RTTI = RTTI_TutorialMenu;
+		inline static constexpr auto      VTABLE = VTABLE_TutorialMenu;
 		constexpr static std::string_view MENU_NAME = "Tutorial Menu";
 
 		~TutorialMenu() override;  // 00
@@ -30,25 +33,16 @@ namespace RE
 			REL::RelocateMember<GFxValue>(this, 0x30, 0x40) = a_root;
 		}
 
-		static void OpenTutorialMenu(DEFAULT_OBJECT a_tutorial)
-		{
-			using func_t = decltype(&TutorialMenu::OpenTutorialMenu);
-			static REL::Relocation<func_t> func{ RELOCATION_ID(51818, 52692) };
-			return func(a_tutorial);
-		}
+		static BSTArray<DEFAULT_OBJECT>& QTutorialsShown();
+
+		static void OpenMenu(DEFAULT_OBJECT a_id);
+		static void OpenMenu(BGSMessage* a_message);
+		static void OpenMenu(DEFAULT_OBJECT a_id, BGSMessage* a_message);
 
 		// members
 #ifndef SKYRIM_CROSS_VR
 		GFxValue root;  // 30, 40 - "Menu_mc"
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(TutorialMenu) == 0x48);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(TutorialMenu) == 0x58);
-#else
-	static_assert(sizeof(TutorialMenu) == 0x30);
-#endif
+	STATIC_ASSERT_SIZE(TutorialMenu, 0x48, 0x48, 0x58, 0x30);
 }

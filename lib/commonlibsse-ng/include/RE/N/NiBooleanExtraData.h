@@ -26,8 +26,6 @@ namespace RE
 
 		// members
 		bool data;  // 18
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiBooleanExtraData) == 0x20);
 }

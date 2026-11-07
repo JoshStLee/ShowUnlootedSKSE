@@ -1,7 +1,7 @@
 #pragma once
 
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BSString.h"
-#include "RE/B/BSTList.h"
 #include "RE/F/FORM.h"
 #include "RE/F/FormTypes.h"
 #include "RE/N/NiFile.h"
@@ -67,10 +67,15 @@ namespace RE
 		bool                                  Seek(std::uint32_t a_offset);
 		bool                                  SeekNextForm(bool a_skipIgnored);
 		bool                                  SeekNextSubrecord();
+		bool                                  SeekNextSubrecordType(uint32_t a_type);
+		bool                                  SeekForm(TESForm* a_form);
+		bool                                  SeekCell(TESWorldSpace* a_worldSpace, int32_t a_x, int32_t a_y);
+		bool                                  SeekLandscapeForCurrentCell();
 		std::uint32_t                         GetFormID(FormID formLower) const
 		{
 			return std::uint32_t(compileIndex) << 24 | (formLower & 0xFFFFFF);
 		}
+		std::uint32_t GetRuntimeFormID(FormID rawFormID) const;
 
 		// members
 		REX::EnumSet<Error, std::uint32_t>      lastError;                        // 000
@@ -80,7 +85,7 @@ namespace RE
 		std::uint64_t                           unk018;                           // 018
 		std::uint64_t                           unk020;                           // 020
 		std::uint8_t                            unk028;                           // 028
-		std::uint8_t                            unk029;                           // 029
+		bool                                    unk029;                           // 029
 		std::uint16_t                           pad02A;                           // 02A
 		std::uint32_t                           pad02C;                           // 02C
 		BSFile*                                 lockedFile;                       // 030
@@ -114,9 +119,9 @@ namespace RE
 		std::uint8_t                            unk2EA;                           // 2EA
 		std::uint8_t                            pad2EB;                           // 2EB
 		REX::W32::WIN32_FIND_DATAA              fileData;                         // 2EC
-		float                                   unk42C;                           // 42C
-		std::uint32_t                           unk430;                           // 430
-		std::uint32_t                           flags;                            // 434
+		float                                   version;                          // 42C
+		std::uint32_t                           formCount;                        // 430
+		std::uint32_t                           nextFormID;                       // 434
 		REX::EnumSet<RecordFlag, std::uint32_t> recordFlags;                      // 438
 		std::uint32_t                           pad43C;                           // 43C
 		BSSimpleList<const char*>               masters;                          // 440
@@ -137,9 +142,7 @@ namespace RE
 		void*                                   reservedDecompressionBuffer;      // 4B0
 		std::uint32_t                           reservedDecompressionBufferSize;  // 4B8
 		std::uint32_t                           pad4BC;                           // 4BC
-		void*                                   unk4C0;                           // 4C0
-	private:
-		KEEP_FOR_RE()
+		void*                                   interiorCellOffsetData;           // 4C0
 	};
 	static_assert(sizeof(TESFile) == 0x4C8);
 }

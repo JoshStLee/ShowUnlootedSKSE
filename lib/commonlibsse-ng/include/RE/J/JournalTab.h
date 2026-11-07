@@ -21,8 +21,6 @@ namespace RE
 
 		// members
 		GPtr<GFxMovieView> view;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(JournalTab) == 0x18);
 }

@@ -35,7 +35,7 @@ namespace RE
 		NiControllerManager* AsNiControllerManager() override;                    // 24 - { return this; }
 		void                 Start(float a_time) override;                        // 25
 		void                 Stop() override;                                     // 26
-		void                 Update(float a_time) override;                       // 27
+		void                 Update(NiUpdateData& a_data) override;               // 27
 		void                 SetTarget(NiObjectNET* a_target) override;           // 28
 		[[nodiscard]] bool   TargetIsRequiredType() const override;               // 2E
 
@@ -55,8 +55,6 @@ namespace RE
 		std::uint32_t                                    padAC;            // AC
 		NiTObjectSet<NiPointer<NiControllerSequence>>    tempBlendSeqs;    // B0
 		NiPointer<NiAVObjectPalette>                     objectPalette;    // C0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiControllerManager) == 0xC8);
 }

@@ -42,8 +42,6 @@ namespace RE
 
 		// members
 		RagDollData* ragDollData;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraRagDollData) == 0x18);
 }

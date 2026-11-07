@@ -47,8 +47,6 @@ namespace RE
 		// members
 		REX::EnumSet<ActionControlFlags, std::uint32_t> actionFlags;  // 18
 		std::uint32_t                                   pad1C;        // 1C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GFxActionControl) == 0x20);
 }

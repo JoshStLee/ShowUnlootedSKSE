@@ -29,8 +29,6 @@ namespace RE
 		float                                        heading;          // 0C
 		REX::EnumSet<AnimationType, std::uint16_t>   animationType;    // 10
 		REX::EnumSet<EntryProperties, std::uint16_t> entryProperties;  // 12
-	private:
-		KEEP_FOR_RE()
 	};
 
 	class BSFurnitureMarkerNode : public NiExtraData
@@ -39,8 +37,20 @@ namespace RE
 		inline static constexpr auto RTTI = RTTI_BSFurnitureMarkerNode;
 		inline static auto           NiRTTI = NiRTTI_BSFurnitureMarkerNode;
 
+		[[nodiscard]] static BSFurnitureMarkerNode* FindBSFurnitureMarkerNode(NiObjectNET* a_object)
+		{
+			using func_t = decltype(&BSFurnitureMarkerNode::FindBSFurnitureMarkerNode);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(74889, 76647) };
+			return func(a_object);
+		}
+
+		[[nodiscard]] static std::uint32_t GetNumFurnitureMarkers(NiObjectNET* a_object)
+		{
+			const auto markerNode = FindBSFurnitureMarkerNode(a_object);
+			return markerNode ? markerNode->markers.size() : 0;
+		}
+
+		// members
 		BSTArray<BSFurnitureMarker> markers;  // 18
-	private:
-		KEEP_FOR_RE()
 	};
 }

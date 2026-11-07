@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BaseFormComponent.h"
 
 namespace RE
@@ -142,8 +142,6 @@ namespace RE
 		// members
 		AIDATA_GAME aiData;      // 08 - AIDT
 		PackageList aiPackages;  // 18 - PKID
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESAIForm) == 0x28);
 }

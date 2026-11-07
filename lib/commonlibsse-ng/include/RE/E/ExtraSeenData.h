@@ -21,8 +21,6 @@ namespace RE
 
 		// members
 		SeenData* seenData;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraSeenData) == 0x18);
 }

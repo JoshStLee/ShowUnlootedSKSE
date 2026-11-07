@@ -17,8 +17,6 @@ namespace RE
 		float                           capsuleRadius;  // 04
 		hkStringPtr                     fileName;       // 08
 		REX::EnumSet<Type, std::int8_t> type;           // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkbShapeSetup) == 0x18);
 }

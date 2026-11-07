@@ -2,6 +2,7 @@
 
 #include "RE/B/BSContainer.h"
 #include "RE/B/BSTArray.h"
+#include "RE/B/BSTEvent.h"
 #include "RE/F/FormTypes.h"
 #include "RE/T/TESForm.h"
 
@@ -52,8 +53,6 @@ namespace RE
 		BSTArray<FormID>*  scriptAddedTempForms;  // 38
 		std::uint32_t      scriptAddedFormCount;  // 40
 		std::uint32_t      pad44;                 // 44
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSListForm) == 0x48);
 }

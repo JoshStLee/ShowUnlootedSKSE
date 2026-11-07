@@ -17,8 +17,6 @@ namespace RE
 
 		hkStringPtr         trackName;    // 00
 		hkArray<Annotation> annotations;  // 08
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkaAnnotationTrack) == 0x18);
 }

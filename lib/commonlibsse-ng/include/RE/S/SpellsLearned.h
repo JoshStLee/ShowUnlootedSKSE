@@ -4,23 +4,16 @@
 
 namespace RE
 {
-	class SpellItem;
-
 	struct SpellsLearned
 	{
 	public:
+		// Carries no data. Do not add fields.
 		struct Event
 		{
-		public:
-			// members
-			SpellItem* spell;  // 00
 		};
-		static_assert(sizeof(Event) == 0x8);
+		static_assert(sizeof(Event) == 0x1);
 
 		static BSTEventSource<Event>* GetEventSource();
-		static void                   SendEvent(SpellItem* a_spell);
-
-	private:
-		KEEP_FOR_RE()
+		static void                   SendEvent();
 	};
 }

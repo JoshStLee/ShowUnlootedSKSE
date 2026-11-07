@@ -15,8 +15,6 @@ namespace RE
 
 		virtual void PostSimulationCallback(hkpWorld* a_world) = 0;  // 01
 		virtual void InactiveEntityMovedCallback(hkpWorld*) {}       // 02
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpWorldPostSimulationListener) == 0x8);
 }

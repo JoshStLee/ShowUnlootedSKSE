@@ -32,8 +32,6 @@ namespace RE
 		std::uint8_t    unkAA;          // AA
 		std::uint8_t    unkAB;          // AB
 		std::uint32_t   unkAC;          // AC
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TelekinesisEffect) == 0xB0);
 }

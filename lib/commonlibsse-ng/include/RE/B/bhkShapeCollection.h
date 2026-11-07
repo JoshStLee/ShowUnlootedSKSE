@@ -20,8 +20,6 @@ namespace RE
 
 		// add
 		virtual void Unk_36(void) = 0;  // 36
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(bhkShapeCollection) == 0x28);
 }

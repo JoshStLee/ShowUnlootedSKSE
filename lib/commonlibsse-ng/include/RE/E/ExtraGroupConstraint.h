@@ -29,8 +29,6 @@ namespace RE
 		NiPoint3        constraintOffsetB;        // 34
 		std::uint32_t   originalCollisionGroupB;  // 40
 		float           dynamicMassScaleB;        // 44
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraGroupConstraint) == 0x48);
 }

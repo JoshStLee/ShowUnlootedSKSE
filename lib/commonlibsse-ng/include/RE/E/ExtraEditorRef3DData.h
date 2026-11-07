@@ -24,8 +24,6 @@ namespace RE
 		// members
 		NiPointer<NiAVObject> data3D;     // 10
 		NiPointer<BSLines>    dataBound;  // 18
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraEditorRef3DData) == 0x20);
 }

@@ -5,6 +5,7 @@
 #include "RE/N/NiSmartPointer.h"
 #include <DirectXMath.h>
 
+#include "REL/RuntimeDataAccessors.h"
 #include "REX/W32/D3D.h"
 
 namespace RE
@@ -53,25 +54,15 @@ namespace RE
 		BSMultiIndexTriShape* AsMultiIndexTriShape() override;  // 35 - { return this; }
 #endif
 
-		[[nodiscard]] inline MULTI_INDEX_TRISHAPE_RUNTIME_DATA& GetMultiIndexTrishapeRuntimeData() noexcept
-		{
-			return REL::RelocateMember<MULTI_INDEX_TRISHAPE_RUNTIME_DATA>(this, 0x160, 0x1A8);
-		}
-
-		[[nodiscard]] inline const MULTI_INDEX_TRISHAPE_RUNTIME_DATA& GetMultiIndexTrishapeRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<MULTI_INDEX_TRISHAPE_RUNTIME_DATA>(this, 0x160, 0x1A8);
-		}
-
+		RUNTIME_DATA_ACCESSOR_EX(MULTI_INDEX_TRISHAPE_RUNTIME_DATA, GetMultiIndexTrishapeRuntimeData, 0x160, 0x1A0);
 		// members
 #ifndef SKYRIM_CROSS_VR
-		RUNTIME_DATA_CONTENT  // 160, 1A8
+		RUNTIME_DATA_CONTENT  // 160, 1A0
+#endif
+#ifdef EXCLUSIVE_SKYRIM_VR
+			std::uint8_t unkVr218[0x40];  // 218
 #endif
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(BSMultiIndexTriShape) == 0x1D8);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(BSMultiIndexTriShape) == 0x220);
-#endif
+	STATIC_ASSERT_SIZE(BSMultiIndexTriShape, 0x1D8, 0x258);
 }
 #undef RUNTIME_DATA_CONTENT

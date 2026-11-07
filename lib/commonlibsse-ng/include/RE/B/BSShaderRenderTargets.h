@@ -122,18 +122,21 @@ namespace RE
 			kSNOW_SPECALPHA,
 			kSNOW_SWAP,
 
-			kTOTAL,  // SE 114, 125 in VR, 116 in AE1130
-			k114 = 114,
-			k115,
-			k116,
-			k117,
-			k118,
-			k119,
-			k120,
-			k121,
-			k122,
-			k123,
-			k124,
+			kTOTAL,  // SE/VR 114, 116 in AE1130. In SE/AE this is the array size; in
+					 // VR slot 114 is a real entry (kVR_FRAMEBUFFER below) and the
+					 // array size is kVRTOTAL.
+			// VR-only slots (115..124).
+			kVR_FRAMEBUFFER = kTOTAL,  // Side-by-side framebuffer headed to the HMD compositor.
+			kPROJECTEDMENU = 115,
+			kHUDMENU,
+			kFADERUI,
+			kWORLDUI0,
+			kWORLDUI1,
+			kWORLDUI2,
+			kWORLDUI3,
+			kWORLDUI4,
+			kWORLDUI5,
+			kWORLDUI6,
 			kVRTOTAL = 125,
 			kFRAMEBUFFER_TOTAL = kMAIN,
 		};
@@ -182,14 +185,17 @@ namespace RE
 			kFOCUS_NEO,
 
 			kTOTAL,  // 12 in SSE, 21 in VR
-			k13,
-			k14,
+			// VR
+			kPROJECTEDMENU = kFOCUS_NEO,
+			kHUDMENU = kTOTAL,
+			kWORLDUI,
+			kMAIN_DOWNSAMPLE,
 			k15,
-			k16,
-			k17,
-			k18,
-			k19,
-			k20,
+			kFADERUI,
+			kSHADOWMAPS_ESRAM1,
+			kSHADOWMAPS_ESRAM2,
+			kSHADOWMAPS_ESRAM3,
+			kSHADOWMAPS_ESRAM4,
 			kVRTOTAL = 21,
 		};
 	};

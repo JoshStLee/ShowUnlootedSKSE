@@ -31,10 +31,11 @@ namespace RE
 		virtual void GetClosestPoints(hkpCdPointCollector& a_collector, const hkpCollisionInput* a_input = 0) = 0;                                                                                   // 11
 		virtual void GetPenetrations(hkpCdBodyPairCollector& a_collector, const hkpCollisionInput* a_input = 0) = 0;                                                                                 // 12
 
+		void SetTransform(const hkTransform& transform);
+		void SetPosition(const hkVector4& position, float extraTolerance = 0.0f);
+
 		// members
 		hkMotionState motionState;  // 0F0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpShapePhantom) == 0x1A0);
 }

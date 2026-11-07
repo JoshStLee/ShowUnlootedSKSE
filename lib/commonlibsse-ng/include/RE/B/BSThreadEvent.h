@@ -10,8 +10,5 @@ namespace RE
 			static REL::Relocation<func_t> func{ RELOCATION_ID(67151, 68449) };
 			return func();
 		}
-
-	private:
-		KEEP_FOR_RE()
 	};
 }

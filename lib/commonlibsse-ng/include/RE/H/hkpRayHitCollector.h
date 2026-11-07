@@ -22,8 +22,6 @@ namespace RE
 		// members
 		float         earlyOutHitFraction{ 1.0f };  // 08
 		std::uint32_t pad0C;                        // 0C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpRayHitCollector) == 0x10);
 }

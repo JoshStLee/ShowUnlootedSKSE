@@ -447,8 +447,6 @@ namespace RE
 		GList<GRendererEventHandler>               handlers;    // 10
 		StereoParams                               s3DParams;   // 20
 		REX::EnumSet<StereoDisplay, std::uint32_t> s3DDisplay;  // 34
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GRenderer) == 0x38);
 }

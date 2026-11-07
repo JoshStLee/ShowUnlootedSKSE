@@ -45,9 +45,6 @@ namespace RE
 			// Action
 			kAction = kChannel_Action | 0
 		};
-
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GFxLogConstants) == 0x1);
 }

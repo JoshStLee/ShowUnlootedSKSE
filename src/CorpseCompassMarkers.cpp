@@ -2,6 +2,7 @@
 #include "CorpseCompassMarkers.h"
 #include "CorpseTracker.h"
 
+#include <RE/C/Compass.h>
 #include <RE/M/MessageBoxMenu.h>
 #include <RE/S/StatsMenu.h>
 
@@ -19,7 +20,7 @@
 
 // Diagnostic build: log the first AddMarker slot snapshot per corpse, then at
 // most once every two seconds while it remains tracked.
-#define SHOW_UNLOOTED_MARKER_DIAGNOSTICS 1
+#define SHOW_UNLOOTED_MARKER_DIAGNOSTICS 0
 
 namespace
 {
@@ -250,7 +251,7 @@ namespace
         return addMarker(a_manager, a_markerData, a_position, a_handle, a_iconFrame);
     }
 
-    using CompassUpdateFn = void (*)(RE::HUDObject*);
+    using CompassUpdateFn = void (*)(RE::Compass*);
     CompassUpdateFn originalCompassUpdate = nullptr;
     std::recursive_mutex compassUpdateMutex;
 
@@ -382,7 +383,7 @@ namespace
         }
     }
 
-    bool IsCompassHUDVisible(RE::HUDObject* a_compass, RE::UI* a_ui)
+    bool IsCompassHUDVisible(RE::Compass* a_compass, RE::UI* a_ui)
     {
         if (!a_compass || !a_compass->view || !a_ui ||
             a_ui->IsMenuOpen(RE::JournalMenu::MENU_NAME) ||
@@ -420,7 +421,7 @@ namespace
         return false;
     }
 
-    void CompassUpdateHook(RE::HUDObject* a_compass)
+    void CompassUpdateHook(RE::Compass* a_compass)
     {
         // Crash logs show HUD updates reaching this hook from job/task
         // threads. Serialize access to the marker manager and Scaleform data
@@ -460,7 +461,7 @@ void CorpseCompassMarkers::InstallHook()
         return;
     }
 
-    REL::Relocation<std::uintptr_t> compassVTable{ RE::VTABLE_Compass[0] };
+    REL::Relocation<std::uintptr_t> compassVTable{ RE::Compass::VTABLE[0] };
     originalCompassUpdate = reinterpret_cast<CompassUpdateFn>(compassVTable.write_vfunc(1, &CompassUpdateHook));
     if (originalCompassUpdate) {
         logger::info("Native corpse marker update hook installed");

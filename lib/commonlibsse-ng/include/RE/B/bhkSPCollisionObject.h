@@ -22,8 +22,6 @@ namespace RE
 		void          SaveBinary(NiStream& a_stream) override;            // 1B
 		void          Unk_2B() override;                                  // 2B
 		void          Unk_2C() override;                                  // 2C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(bhkSPCollisionObject) == 0x28);
 }

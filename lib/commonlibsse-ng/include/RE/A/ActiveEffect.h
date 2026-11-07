@@ -4,8 +4,8 @@
 #include "RE/B/BSContainer.h"
 #include "RE/B/BSFixedString.h"
 #include "RE/B/BSPointerHandle.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BSSoundHandle.h"
-#include "RE/B/BSTList.h"
 #include "RE/M/MagicSystem.h"
 #include "RE/N/NiSmartPointer.h"
 
@@ -49,7 +49,8 @@ namespace RE
 			kRecovers = 1 << 9,
 			kDual = 1 << 12,
 			kInactive = 1 << 15,
-			kDispelled = 1 << 18
+			kDispelled = 1 << 18,
+			kCustomSkillUse = 1 << 19
 		};
 
 		enum class ConditionStatus
@@ -115,8 +116,6 @@ namespace RE
 		std::uint16_t                                pad86;                // 86
 		MagicSystem::CastingSource                   castingSource;        // 88
 		std::uint32_t                                pad8C;                // 8C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ActiveEffect) == 0x90);
 }

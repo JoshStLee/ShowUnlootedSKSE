@@ -67,8 +67,6 @@ namespace RE
 								 [[maybe_unused]] GHeapSegVisitor* a_visitor,
 								 [[maybe_unused]] std::size_t      a_catSeg,
 								 [[maybe_unused]] std::size_t      a_catUnused) const { return; }  // 0E
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GSysAllocPaged) == 0x8);
 }

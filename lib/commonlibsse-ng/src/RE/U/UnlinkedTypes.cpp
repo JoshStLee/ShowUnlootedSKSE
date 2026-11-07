@@ -11,7 +11,6 @@ namespace RE
 			Object::~Object()
 			{
 				Dtor();
-				stl::memzero(this);
 			}
 
 			void Object::Dtor()
@@ -31,7 +30,14 @@ namespace RE
 			Object* Object::Create()
 			{
 				auto object = malloc<Object>();
+#ifdef __clang__
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Wnontrivial-memaccess"
+#endif
 				std::memset(object, 0, sizeof(Object));
+#ifdef __clang__
+#	pragma clang diagnostic pop
+#endif
 				if (object) {
 					object->Ctor();
 				}

@@ -3,7 +3,9 @@
 namespace RE
 {
 	using hkObjectIndex = std::uint16_t;
-	using hkTime = float;
+	using hkReal = float;
+	using hkTime = hkReal;
+	using hkpConstraintRuntime = void;
 
 	enum class hkResult
 	{
@@ -27,8 +29,6 @@ namespace RE
 
 		// members
 		std::int16_t _value;  // 0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkHalf) == 0x2);
 
@@ -39,8 +39,9 @@ namespace RE
 	public:
 		// members
 		std::uint8_t value;  // 0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkUFloat8) == 0x1);
+
+	template <class E, class U>
+	using hkEnum = REX::EnumSet<E, U>;
 }

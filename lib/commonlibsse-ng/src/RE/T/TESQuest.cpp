@@ -10,11 +10,18 @@ namespace RE
 		return *reinterpret_cast<const std::uintptr_t*>(this) != 0;
 	}
 
-	ObjectRefHandle& TESQuest::CreateRefHandleByAliasID(ObjectRefHandle& a_handle, std::uint32_t a_aliasID)
+	ObjectRefHandle& TESQuestTarget::GetTargetRef(ObjectRefHandle& a_out, bool a_allowPickUpActor, const TESQuest* a_quest)
 	{
-		using func_t = decltype(&TESQuest::CreateRefHandleByAliasID);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(24537, 25066) };
-		return func(this, a_handle, a_aliasID);
+		using func_t = decltype(&TESQuestTarget::GetTargetRef);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(24815, 25284) };
+		return func(this, a_out, a_allowPickUpActor, a_quest);
+	}
+
+	ObjectRefHandle& TESQuestTarget::GetTrackingRef(ObjectRefHandle& a_out, const TESQuest* a_quest)
+	{
+		using func_t = decltype(&TESQuestTarget::GetTrackingRef);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(24816, 25285) };
+		return func(this, a_out, a_quest);
 	}
 
 	bool TESQuest::EnsureQuestStarted(bool& a_result, bool a_startNow)
@@ -24,9 +31,31 @@ namespace RE
 		return func(this, a_result, a_startNow);
 	}
 
+	void TESQuest::ForceRefIntoAlias(std::uint32_t a_aliasID, TESObjectREFR* a_ref)
+	{
+		using func_t = decltype(&TESQuest::ForceRefIntoAlias);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(24523, 25052) };
+		return func(this, a_aliasID, a_ref);
+	}
+
+	ObjectRefHandle TESQuest::GetAliasedRef(std::uint32_t a_aliasID) const
+	{
+		BSReadLockGuard locker(aliasAccessLock);
+
+		auto it = refAliasMap.find(a_aliasID);
+		return it != refAliasMap.end() ? it->second : ObjectRefHandle();
+	}
+
 	std::uint16_t TESQuest::GetCurrentStageID() const
 	{
 		return currentStage;
+	}
+
+	void TESQuest::GetJournalTextForInstance(BSString& out, std::uint32_t instanceID)
+	{
+		using func_t = decltype(&TESQuest::GetJournalTextForInstance);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(24549, 25078) };
+		return func(this, out, instanceID);
 	}
 
 	bool TESQuest::IsActive() const
@@ -119,5 +148,12 @@ namespace RE
 		if (IsEnabled()) {
 			SetEnabled(false);
 		}
+	}
+
+	bool TESQuest::UpdateCurrentInstanceGlobal(TESGlobal* a_global)
+	{
+		using func_t = decltype(&TESQuest::UpdateCurrentInstanceGlobal);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(24509, 25037) };
+		return func(this, a_global);
 	}
 }

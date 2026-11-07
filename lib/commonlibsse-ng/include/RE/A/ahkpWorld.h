@@ -17,8 +17,6 @@ namespace RE
 		// members
 		bhkWorld*     userData;  // 430
 		std::uint64_t unk438;    // 438
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ahkpWorld) == 0x440);
 }

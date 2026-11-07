@@ -73,8 +73,5 @@ namespace RE
 		{
 			BaseType::SetCapacity(this, a_newSize);
 		}
-
-	private:
-		KEEP_FOR_RE()
 	};
 }

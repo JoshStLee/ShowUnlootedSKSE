@@ -10,6 +10,7 @@
 #include "RE/E/ExtraWornLeft.h"
 #include "RE/F/FormTypes.h"
 #include "RE/M/MemoryManager.h"
+#include "RE/N/NiPoint3.h"
 #include "RE/S/SoulLevels.h"
 
 namespace RE
@@ -39,16 +40,32 @@ namespace RE
 
 		[[nodiscard]] const PresenceBitfield*& GetPresence() const noexcept;
 
-#ifndef ENABLE_SKYRIM_AE
-		~BaseExtraList();  // 00, virtual on AE 1.6.629 and later.
+		// Cross-runtime builds take the virtual-dtor branch below: members sit 8 bytes higher
+		// than on SE/VR, with the same total size.
+#if defined(EXCLUSIVE_SKYRIM_SE) || defined(EXCLUSIVE_SKYRIM_VR)
+		~BaseExtraList();  // 00
+
+		TES_HEAP_REDEFINE_NEW();
 
 		// members
-		BSExtraData*      data = nullptr;      // 00, 08
-		PresenceBitfield* presence = nullptr;  // 08, 10
+		BSExtraData*      data = nullptr;      // 00
+		PresenceBitfield* presence = nullptr;  // 08
+#elif defined(EXCLUSIVE_SKYRIM_AE)
+		// AE 1.6.629+ promoted ~BaseExtraList from non-virtual to virtual,
+		// adding a vtable pointer at offset 0 and shifting members by 8.
+		virtual ~BaseExtraList() = default;  // 00
+
+		TES_HEAP_REDEFINE_NEW();
+
+		// members
+		BSExtraData*      data = nullptr;      // 08
+		PresenceBitfield* presence = nullptr;  // 10
 #endif
 	};
-#ifndef ENABLE_SKYRIM_AE
+#if defined(EXCLUSIVE_SKYRIM_SE) || defined(EXCLUSIVE_SKYRIM_VR)
 	static_assert(sizeof(BaseExtraList) == 0x10);
+#elif defined(EXCLUSIVE_SKYRIM_AE)
+	static_assert(sizeof(BaseExtraList) == 0x18);
 #endif
 
 	class ExtraDataList
@@ -181,22 +198,31 @@ namespace RE
 		bool RemoveByType(ExtraDataType a_type);
 
 		BSExtraData*          Add(BSExtraData* a_toAdd);
+		void                  AddActivateRefChild(TESObjectREFR* a_childRef);
 		ObjectRefHandle       GetAshPileRef();
 		std::int32_t          GetCount() const;
 		const char*           GetDisplayName(TESBoundObject* a_baseObject);
 		BGSEncounterZone*     GetEncounterZone();
 		ExtraTextDisplayData* GetExtraTextDisplayData();
 		TESObjectREFR*        GetLinkedRef(BGSKeyword* a_keyword);
+		float                 GetObjectHealth() const;
 		TESForm*              GetOwner();
 		SOUL_LEVEL            GetSoulLevel() const;
 		ObjectRefHandle       GetTeleportLinkedDoor();
 		bool                  GetWorn() const;
 		bool                  HasQuestObjectAlias();
+		[[nodiscard]] bool    IsInventoryStackable(bool a_ignoreWorn) const;
+		void                  SetActivateParent(TESObjectREFR* a_parentRef, float a_delay);
 		void                  SetCount(std::uint16_t a_count);
+		void                  SetEnchantment(EnchantmentItem* a_enchantment, std::uint16_t a_chargeAmount, bool a_removeOnUnequip);
 		void                  SetEncounterZone(BGSEncounterZone* a_zone);
 		void                  SetExtraFlags(ExtraFlags::Flag a_flags, bool a_enable);
 		void                  SetInventoryChanges(InventoryChanges* a_changes);
+		void                  SetLevCreaModifier(LEV_CREA_MODIFIER a_modifier);
+		void                  SetLinkedRef(TESObjectREFR* a_targetRef, BGSKeyword* a_keyword);
+		void                  SetOverrideName(const char* a_name);
 		void                  SetOwner(TESForm* a_owner);
+		void                  SetStartingPosition(TESObjectREFR* a_refr, const NiPoint3& a_position, const NiPoint3& a_rotation, BGSLocation* a_location);
 
 	private:
 		[[nodiscard]] BSExtraData*     GetByTypeImpl(ExtraDataType a_type) const;
@@ -206,8 +232,10 @@ namespace RE
 
 		// members
 		BaseExtraList _extraData;  // 00
-#ifndef ENABLE_SKYRIM_AE
-		mutable BSReadWriteLock _lock;  // 10, 18; offset 18 only for AE versions .629 and later.
+#ifndef SKYRIM_CROSS_VR
+		mutable BSReadWriteLock _lock;  // 10 / 18 (AE 1.6.629+)
 #endif
 	};
+	// AE-exclusive (1.6.629+) has virtual BaseExtraList → 0x18 + lock = 0x20
+	STATIC_ASSERT_SIZE(ExtraDataList, 0x18, 0x20, 0x18);
 }

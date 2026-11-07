@@ -1,4 +1,3 @@
-#pragma once
 #include "RE/I/InventoryChanges.h"
 #include "RE/A/Actor.h"
 #include "RE/F/FormTraits.h"
@@ -17,7 +16,6 @@ namespace RE
 	InventoryChanges::~InventoryChanges()
 	{
 		Dtor();
-		stl::memzero(this);
 	}
 
 	void InventoryChanges::AddEntryData(InventoryEntryData* a_entry)
@@ -32,15 +30,13 @@ namespace RE
 
 	void InventoryChanges::GenerateLeveledListChanges()
 	{
-		using func_t = decltype(&InventoryChanges::GenerateLeveledListChanges);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(15829, 16068) };
-		return func(this);
+		InitScripts();
 	}
 
 	std::int16_t InventoryChanges::GetItemCount(RE::TESBoundObject* a_obj)
 	{
 		using func_t = decltype(&InventoryChanges::GetItemCount);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(15868, 16047) };
+		static REL::Relocation<func_t> func{ RELOCATION_ID(15868, 16108) };
 		return func(this, a_obj);
 	}
 
@@ -60,6 +56,13 @@ namespace RE
 		}
 	}
 
+	InventoryEntryData* InventoryChanges::GetInventoryItemAt(std::int32_t a_index)
+	{
+		using func_t = decltype(&InventoryChanges::GetInventoryItemAt);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(15866, 16106) };
+		return func(this, a_index);
+	}
+
 	float InventoryChanges::GetInventoryWeight()
 	{
 		using func_t = decltype(&InventoryChanges::GetInventoryWeight);
@@ -72,6 +75,13 @@ namespace RE
 		using func_t = decltype(&InventoryChanges::GetNextUniqueID);
 		static REL::Relocation<func_t> func{ RELOCATION_ID(15908, 16148) };
 		return func(this);
+	}
+
+	RE::ExtraDataList* InventoryChanges::EnchantObject(RE::TESBoundObject* a_obj, RE::ExtraDataList* a_extraList, RE::EnchantmentItem* a_enchantment, uint16_t a_charge)
+	{
+		using func_t = decltype(&InventoryChanges::EnchantObject);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(15906, 16146) };
+		return func(this, a_obj, a_extraList, a_enchantment, a_charge);
 	}
 
 	std::uint32_t InventoryChanges::GetWornMask()
@@ -119,7 +129,7 @@ namespace RE
 	void InventoryChanges::SetUniqueID(ExtraDataList* a_itemList, TESForm* a_oldForm, TESForm* a_newForm)
 	{
 		using func_t = decltype(&InventoryChanges::SetUniqueID);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(15907, 16149) };
+		static REL::Relocation<func_t> func{ RELOCATION_ID(15907, 16147) };
 		return func(this, a_itemList, a_oldForm, a_newForm);
 	}
 

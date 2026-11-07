@@ -67,8 +67,6 @@ namespace RE
 
 		// members
 		Variation variations[VariationIDs::kTotal];  // 60 - SNAM
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESShout) == 0xA8);
 }

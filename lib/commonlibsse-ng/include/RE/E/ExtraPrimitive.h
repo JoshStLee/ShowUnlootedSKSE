@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		BGSPrimitive* primitive;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraPrimitive) == 0x18);
 }

@@ -67,7 +67,18 @@ namespace RE
 		void                       AdjustActiveEffect(ActiveEffect* a_activeEffect, float a_power, bool a_arg3) override;                                                                  // 1C
 
 		// add
+#if defined(EXCLUSIVE_SKYRIM_FLAT)
 		virtual void Update(float a_delta);  // 1D
+#elif defined(EXCLUSIVE_SKYRIM_VR)
+		virtual void Unk_VR_1D(void);        // 1D - VR only
+		virtual void Unk_VR_1E(void);        // 1E - VR only
+		virtual void Update(float a_delta);  // 1F
+#else
+		// Cross-VR build: VR has 2 additional virtuals before Update
+		SKYRIM_REL_VR_VIRTUAL void Unk_VR_1D(void);        // 1D - VR only
+		SKYRIM_REL_VR_VIRTUAL void Unk_VR_1E(void);        // 1E - VR only
+		virtual void               Update(float a_delta);  // 1D (SE/AE) / 1F (VR)
+#endif
 
 		void CheckAttachCastingArt()
 		{
@@ -89,8 +100,6 @@ namespace RE
 		float                              costCharged;                  // F0
 		MagicSystem::CastingSource         castingSource;                // F4
 		REX::EnumSet<Flags, std::uint32_t> flags;                        // F8
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ActorMagicCaster) == 0x100);
 }

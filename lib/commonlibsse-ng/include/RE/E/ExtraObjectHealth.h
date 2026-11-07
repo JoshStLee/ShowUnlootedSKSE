@@ -20,8 +20,6 @@ namespace RE
 		// members
 		float         health;  // 10
 		std::uint32_t pad14;   // 14
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraObjectHealth) == 0x18);
 }

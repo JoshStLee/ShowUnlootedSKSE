@@ -57,8 +57,6 @@ namespace RE
 		// members
 		SPInt nextInChain;  // 00
 		T     value;        // 08
-	private:
-		KEEP_FOR_RE()
 	};
 	// size == 0x8 + sizeof(T)
 }

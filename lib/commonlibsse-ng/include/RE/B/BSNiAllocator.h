@@ -22,8 +22,6 @@ namespace RE
 		void  Initialize() override;                                                                                                                                                                                                                                 // 07 - { return; }
 		void  Shutdown() override;                                                                                                                                                                                                                                   // 08 - { return; }
 		bool  VerifyAddress(const void* a_memory) override;                                                                                                                                                                                                          // 09 - { return true; }
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSNiAllocator) == 0x8);
 }

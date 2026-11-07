@@ -26,7 +26,7 @@ namespace RE
 			alignas(0x10) REX::W32::XMFLOAT4X4 projection;  // 00
 			NiPointer<NiCamera>            camera;          // 40
 			NiPointer<BSShaderAccumulator> accumulator;     // 48
-			BSCullingProcess*              cullingProcess;  // 50
+			BSGeometryListCullingProcess*  cullingProcess;  // 50
 			std::uint64_t                  pad58;           // 58
 		};
 		static_assert(sizeof(OcclusionMapData) == 0x60);
@@ -37,6 +37,12 @@ namespace RE
 		{
 			static REL::Relocation<NiPoint3*> precipDirection{ RELOCATION_ID(515509, 401648) };
 			return *precipDirection;
+		}
+
+		[[nodiscard]] static float& GetCubeSize()
+		{
+			static REL::Relocation<float*> cubeSize{ RELOCATION_ID(515451, 401590) };
+			return *cubeSize;
 		}
 
 		void SetupMask()
@@ -53,6 +59,13 @@ namespace RE
 			func(this, a_emitter);
 		}
 
+		void UpdateProjection(NiPointer<NiCamera> a_camera)
+		{
+			using func_t = decltype(&Precipitation::UpdateProjection);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(25643, 26185) };
+			func(this, a_camera);
+		}
+
 		// members
 		OcclusionMapData      occlusionData;           // 10
 		NiPointer<BSGeometry> currentPrecip;           // 70
@@ -61,8 +74,6 @@ namespace RE
 		float                 currentParticleDensity;  // 84
 		float                 lastParticleDensity;     // 88
 		std::uint32_t         pad8C;                   // 8C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(Precipitation) == 0x90);
 }

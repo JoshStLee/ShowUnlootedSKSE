@@ -149,12 +149,11 @@ namespace RE
 
 		TESObjectREFR* GetReference() const;
 		Actor*         GetActorReference() const;
+		void           ForceRefTo(TESObjectREFR* a_ref);
 
 		// members
 		GenericFillData fillData;    // 28
 		TESCondition*   conditions;  // 40
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSRefAlias) == 0x48);
 }

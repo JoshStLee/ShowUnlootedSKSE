@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RE/B/BSExtraData.h"
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/E/ExtraDataTypes.h"
 #include "RE/N/NiPoint3.h"
 
@@ -44,8 +44,6 @@ namespace RE
 		std::uint32_t                                 leaderNavMeshID;  // 20
 		std::uint32_t                                 pad24;            // 24
 		BSSimpleList<ExtraFollowerSwimBreadcrumb*>    crumbs;           // 28
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraFollowerSwimBreadcrumbs) == 0x38);
 }

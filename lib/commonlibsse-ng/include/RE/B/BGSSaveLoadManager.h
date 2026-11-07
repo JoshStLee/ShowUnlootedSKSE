@@ -10,6 +10,7 @@
 #include "RE/B/BSThread.h"
 #include "RE/R/RaceSexMenuEvent.h"
 #include "RE/R/Request.h"
+#include "REL/RuntimeDataAccessors.h"
 #include <SKSE/Version.h>
 
 namespace RE
@@ -59,8 +60,6 @@ namespace RE
 		std::uint32_t                         characterID;         // 6C
 		REX::EnumSet<SaveType, std::uint32_t> saveType;            // 70
 		std::uint32_t                         pad74;               // 74
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSSaveLoadFileEntry) == 0x78);
 
@@ -82,18 +81,18 @@ namespace RE
 
 			~Thread() override;  // 00
 
-			void Unk_01(void) override;  // 01
-			void Unk_02(void) override;  // 02
+			std::uint32_t ThreadProc() override;  // 01
+			void          Unk_02(void) override;  // 02
 
 			// members
-			bool                                                                    isRunnning;                   // 50
-			bool                                                                    isBusy;                       // 51
-			std::uint16_t                                                           pad52;                        // 52
-			std::uint32_t                                                           pad54;                        // 54
-			BSEventFlag                                                             haveTask;                     // 58
-			BSTCommonStaticMessageQueue<BSTSmartPointer<bgs::saveload::Request>, 8> asyncSaveLoadOperationQueue;  // 60
+			bool                                                                    isRunnning;                   // 50, 58
+			bool                                                                    isBusy;                       // 51, 59
+			std::uint16_t                                                           pad52;                        // 52, 5A
+			std::uint32_t                                                           pad54;                        // 54, 5C
+			BSEventFlag                                                             haveTask;                     // 58, 60
+			BSTCommonStaticMessageQueue<BSTSmartPointer<bgs::saveload::Request>, 8> asyncSaveLoadOperationQueue;  // 60, 68
 		};
-		static_assert(sizeof(Thread) == 0xC0);
+		STATIC_ASSERT_SIZE(Thread, 0xC0, 0xC8);
 
 		struct SaveEntry
 		{
@@ -130,52 +129,29 @@ namespace RE
 		{
 #define RUNTIME_DATA_CONTENT                                                                  \
 	Thread                                                                  thread; /* 2B0 */ \
-	BSTCommonStaticMessageQueue<BSTSmartPointer<bgs::saveload::Request>, 8> unk370; /* 370 */ \
-	uint64_t                                                                unk3D0; /* 3D0 */
-            RUNTIME_DATA_CONTENT
+	BSTCommonStaticMessageQueue<BSTSmartPointer<bgs::saveload::Request>, 8> unk370; /* 370 */
+			// nothing follows the queue; adding a member here changes the AE/VR totals
+			RUNTIME_DATA_CONTENT
 		};
 
 		// 1130 and later
 		struct AE_RUNTIME_DATA
 		{
-#define AE_RUNTIME_DATA_CONTENT                                                               \
-	std::uint16_t                                                           unk2B0; /* 2B0 */ \
-	std::uint16_t                                                           unk2B2; /* 2B2 */ \
-	std::uint64_t                                                           unk2B8; /* 2B8 */ \
-	BSTArray<void*>                                                         unk2C0; /* 2C0 */ \
-	BSTArray<void*>                                                         unk2D8; /* 2D8 */ \
-	std::uint8_t                                                            unk2F0; /* 2F0 */ \
-	Thread                                                                  thread; /* 2F8 */ \
-	BSTCommonStaticMessageQueue<BSTSmartPointer<bgs::saveload::Request>, 8> unk370; /* 370 */ \
-	uint64_t                                                                unk3D0; /* 3D0 */
-            AE_RUNTIME_DATA_CONTENT
+#define AE_RUNTIME_DATA_CONTENT                                                                                                                                   \
+	std::uint16_t                                                           unk2B0;           /* 2B0 */                                                           \
+	std::uint16_t                                                           unk2B2;           /* 2B2 */                                                           \
+	BGSSaveLoadFileEntry*                                                   pendingSaveEntry; /* 2B8 - single cached/pending entry, separate from saveGameList */ \
+	BSTArray<BSFixedString>                                                 unk2C0;           /* 2C0 */                                                           \
+	BSTArray<BSFixedString>                                                 unk2D8;           /* 2D8 */                                                           \
+	std::uint8_t                                                            unk2F0;           /* 2F0 */                                                           \
+	Thread                                                                  thread;           /* 2F8 */                                                           \
+	BSTCommonStaticMessageQueue<BSTSmartPointer<bgs::saveload::Request>, 8> unk370;           /* 370, 3B8 */
+			AE_RUNTIME_DATA_CONTENT
 		};
 		static_assert(offsetof(AE_RUNTIME_DATA, thread) == 0x48);
 
-		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
-		{
-			return REL::RelocateMemberIfNewer<RUNTIME_DATA>(SKSE::RUNTIME_SSE_1_6_1130, this, 0x2b0, 0x2f8);
-		}
-
-		[[nodiscard]] inline const RUNTIME_DATA& GetRuntimeData() const noexcept
-		{
-			return REL::RelocateMemberIfNewer<RUNTIME_DATA>(SKSE::RUNTIME_SSE_1_6_1130, this, 0x2b0, 0x2f8);
-		}
-
-		[[nodiscard]] inline AE_RUNTIME_DATA* GetAERuntimeData() noexcept
-		{
-			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
-				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_6_1130) != std::strong_ordering::less) {
-					return REL::RelocateMember<AE_RUNTIME_DATA*>(this, 0x2b0);
-				}
-			}
-			return nullptr;
-		}
-
-		[[nodiscard]] inline const AE_RUNTIME_DATA& GetAERuntimeData() const noexcept
-		{
-			return this->GetAERuntimeData();
-		}
+		RUNTIME_DATA_ACCESSOR_VERSIONED(RUNTIME_DATA, SKSE::RUNTIME_SSE_1_6_1130, 0x2b0, 0x2f8);
+		AE_ONLY_POINTER_ACCESSOR_VERSIONED(AE_RUNTIME_DATA, GetAERuntimeData, SKSE::RUNTIME_SSE_1_6_1130, 0x2b0);
 
 		// members
 		BSTHashMap<std::uint64_t, BSFixedString> characterIDNameMap;      // 078
@@ -234,12 +210,12 @@ namespace RE
 		std::uint32_t                   unk2A4;                   // 2A4
 		std::uint64_t                   unk2A8;                   // 2A8
 #if defined(EXCLUSIVE_SKYRIM_AE)                                  // AE 1130 specific change
-		std::uint16_t   unk2B0;                                   // 2B0
-		std::uint16_t   unk2B2;                                   // 2B2
-		std::uint64_t   unk2B8;                                   // 2B8
-		BSTArray<void*> unk2C0;                                   // 2C0
-		BSTArray<void*> unk2D8;                                   // 2D8
-		std::uint8_t    unk2F0;                                   // 2F0
+		std::uint16_t           unk2B0;                           // 2B0
+		std::uint16_t           unk2B2;                           // 2B2
+		BGSSaveLoadFileEntry*   pendingSaveEntry;                 // 2B8
+		BSTArray<BSFixedString> unk2C0;                           // 2C0
+		BSTArray<BSFixedString> unk2D8;                           // 2D8
+		std::uint8_t            unk2F0;                           // 2F0
 #endif
 #if !defined(SKYRIM_CROSS_VR)
 		RUNTIME_DATA_CONTENT;
@@ -247,15 +223,12 @@ namespace RE
 	protected:
 		bool Save_Impl(std::int32_t a_deviceID, std::uint32_t a_outputStats, const char* a_fileName);
 		bool Load_Impl(const char* a_fileName, std::int32_t a_deviceID, std::uint32_t a_outputStats, bool a_checkForMods);
-
-	private:
-		KEEP_FOR_RE()
 	};
 #if defined(EXCLUSIVE_SKYRIM_FLAT)
 #	if defined(EXCLUSIVE_SKYRIM_AE)
-	static_assert(sizeof(BGSSaveLoadManager) == 0x420);
+	static_assert(sizeof(BGSSaveLoadManager) == 0x418);
 #	else
-	static_assert(sizeof(BGSSaveLoadManager) == 0x3D8);
+	static_assert(sizeof(BGSSaveLoadManager) == 0x3D0);
 #	endif
 #elif defined(EXCLUSIVE_SKYRIM_VR)
 	static_assert(sizeof(BGSSaveLoadManager) == 0x3D8);
@@ -263,3 +236,6 @@ namespace RE
 	static_assert(sizeof(BGSSaveLoadManager) == 0x2B0);
 #endif
 }
+
+#undef RUNTIME_DATA_CONTENT
+#undef AE_RUNTIME_DATA_CONTENT

@@ -23,8 +23,6 @@ namespace RE
 
 		// members
 		BGSAnimationSequencer* sequencer;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraAnimationSequencer) == 0x18);
 }

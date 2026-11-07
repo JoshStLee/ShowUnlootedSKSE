@@ -18,8 +18,6 @@ namespace RE
 
 		// members
 		hkArray<hkpEntity*> entities;  // 30
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpArrayAction) == 0x40);
 }

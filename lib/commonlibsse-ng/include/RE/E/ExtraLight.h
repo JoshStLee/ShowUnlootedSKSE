@@ -30,8 +30,6 @@ namespace RE
 
 		// members
 		REFR_LIGHT* lightData;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraLight) == 0x18);
 }

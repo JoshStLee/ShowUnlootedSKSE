@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RE/B/BSSceneGraph.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -14,9 +15,11 @@ namespace RE
 		~SceneGraph() override;  // 00
 
 		// override (BSSceneGraph)
-		const NiRTTI* GetRTTI() const override;    // 02
-		float         GetFarDistance() override;   // 3E
-		float         GetNearDistance() override;  // 3F
+		const NiRTTI* GetRTTI() const override;  // 02
+#ifndef SKYRIM_CROSS_VR
+		float GetFarDistance() override;   // 3E
+		float GetNearDistance() override;  // 3F
+#endif
 
 		struct SCENE_GRAPH_RUNTIME_DATA
 		{
@@ -31,21 +34,10 @@ namespace RE
 			RUNTIME_DATA_CONTENT
 		};
 
-		[[nodiscard]] inline SCENE_GRAPH_RUNTIME_DATA& GetRuntimeData() noexcept
-		{
-			return REL::RelocateMember<SCENE_GRAPH_RUNTIME_DATA>(this, 0x140, 0x168);
-		}
-
-		[[nodiscard]] inline const SCENE_GRAPH_RUNTIME_DATA& GetRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<SCENE_GRAPH_RUNTIME_DATA>(this, 0x140, 0x168);
-		}
-
+		RUNTIME_DATA_ACCESSOR(SCENE_GRAPH_RUNTIME_DATA, 0x140, 0x168);
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT;
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
 }
 #undef RUNTIME_DATA_CONTENT

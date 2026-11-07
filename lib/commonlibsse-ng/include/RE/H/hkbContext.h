@@ -24,8 +24,6 @@ namespace RE
 		hkRefVariant                          world;                     // 38
 		hkbAttachmentManager*                 attachmentManager;         // 40
 		hkRefVariant                          animationCache;            // 48
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkbContext) == 0x50);
 }

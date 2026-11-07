@@ -29,7 +29,7 @@ namespace RE
 		public:
 			// members
 			alignas(0x10) const hkpShape* shape;       // 00
-			std::uint32_t        collisionFilterInfo;  // 08
+			CFilter              collisionFilterInfo;  // 08
 			mutable std::int32_t shapeSize;            // 0C
 			mutable std::int32_t numChildShapes;       // 10
 			std::uint32_t        pad14;                // 14
@@ -50,7 +50,7 @@ namespace RE
 		std::int32_t    GetNumChildShapes() const override;                                         // 01 - { return childInfo.getSize() - numDisabledChildren; }
 		hkpShapeKey     GetFirstKey() const override;                                               // 02 - { return hkpListShape::getNextKey(hkpShapeKey(-1)); }
 		hkpShapeKey     GetNextKey(hkpShapeKey a_oldKey) const override;                            // 03
-		std::uint32_t   GetCollisionFilterInfo(hkpShapeKey a_key) const override;                   // 04
+		CFilter         GetCollisionFilterInfo(hkpShapeKey a_key) const override;                   // 04
 		const hkpShape* GetChildShape(hkpShapeKey a_key, hkpShapeBuffer& a_buffer) const override;  // 05
 
 		// members
@@ -61,8 +61,6 @@ namespace RE
 		hkVector4          aabbHalfExtents;      // 50
 		hkVector4          aabbCenter;           // 60
 		std::uint32_t      enabledChildren[8];   // 70
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpListShape) == 0x90);
 }

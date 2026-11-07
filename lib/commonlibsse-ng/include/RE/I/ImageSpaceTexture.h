@@ -4,6 +4,7 @@
 #include "RE/N/NiSmartPointer.h"
 #include "RE/T/TextureAddressModes.h"
 #include "RE/T/TextureFilterModes.h"
+#include "REL/Relocation.h"
 
 namespace RE
 {
@@ -12,6 +13,12 @@ namespace RE
 	class ImageSpaceTexture
 	{
 	public:
+		[[nodiscard]] static ImageSpaceTexture& GetCharacterLightTexture() noexcept
+		{
+			static REL::Relocation<ImageSpaceTexture*> texture{ RELOCATION_ID(513464, 391302) };
+			return *texture;
+		}
+
 		// members
 		NiPointer<NiSourceTexture>     texture;       // 00
 		RENDER_TARGET                  renderTarget;  // 08
@@ -22,8 +29,6 @@ namespace RE
 		std::uint8_t                   pad19;         // 19
 		std::uint16_t                  pad1A;         // 1A
 		std::uint16_t                  pad1C;         // 1C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ImageSpaceTexture) == 0x20);
 }

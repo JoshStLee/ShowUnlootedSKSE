@@ -80,8 +80,6 @@ namespace RE
 		REX::EnumSet<FILL_TYPE, std::uint16_t> fillType;     // 20
 		std::uint16_t                          pad22;        // 22
 		std::uint32_t                          pad24;        // 24
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSBaseAlias) == 0x28);
 }

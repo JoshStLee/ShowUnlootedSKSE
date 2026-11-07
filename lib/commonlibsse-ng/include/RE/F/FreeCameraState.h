@@ -20,15 +20,19 @@ namespace RE
 		~FreeCameraState() override;  // 00
 
 		// override (TESCameraState)
-		void Begin() override;                                               // 01
-		void End() override;                                                 // 02
+		void Begin() override;  // 01
+		void End() override;    // 02
+#ifndef SKYRIM_CROSS_VR
 		void Update(BSTSmartPointer<TESCameraState>& a_nextState) override;  // 03
 		void GetRotation(NiQuaternion& a_rotation) override;                 // 04
 		void GetTranslation(NiPoint3& a_translation) override;               // 05
+#endif
 
 		// override (PlayerInputHandler)
-		bool CanProcess(InputEvent* a_event) override;                                          // 01
-		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_movementData) override;  // 04
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#ifdef EXCLUSIVE_SKYRIM_VR
+		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_movementData) override;  // 06
+#endif
 
 		// members
 		NiPoint3         translation;        // 30
@@ -37,17 +41,6 @@ namespace RE
 		std::int16_t     verticalDirection;  // 4C
 		bool             useRunSpeed;        // 4E
 		bool             lockToZPlane;       // 4F
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-#	if defined(ENABLE_SKYRIM_AE) || defined(ENABLE_SKYRIM_SE)
 	static_assert(sizeof(FreeCameraState) == 0x50);
-#	else
-	static_assert(sizeof(FreeCameraState) == 0x48);
-#	endif
-#elif !defined(ENABLE_SKYRIM_AE) && !defined(ENABLE_SKYRIM_AE)
-#else
-	static_assert(sizeof(FreeCameraState) == 0x50);
-#endif
 }

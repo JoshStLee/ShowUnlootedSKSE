@@ -39,8 +39,6 @@ namespace RE
 		// members
 		std::uint64_t unk08;      // 08
 		GASObject*    __proto__;  // 10 - smart pointer
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GASObjectInterface) == 0x18);
 }

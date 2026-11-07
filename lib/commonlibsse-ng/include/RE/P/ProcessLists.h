@@ -3,8 +3,9 @@
 #include "RE/B/BSAtomic.h"
 #include "RE/B/BSContainer.h"
 #include "RE/B/BSPointerHandle.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BSTArray.h"
-#include "RE/B/BSTList.h"
+#include "RE/B/BSTEvent.h"
 #include "RE/B/BSTSingleton.h"
 #include "RE/B/BSTSmartPointer.h"
 #include "RE/C/Crime.h"
@@ -98,8 +99,6 @@ namespace RE
 		bool                                    runAnimations;                                 // 1E6
 		bool                                    updateActorsInPlayerCell;                      // 1E7
 		std::uint64_t                           unk1E8;                                        // 1E8
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ProcessLists) == 0x1F0);
 }

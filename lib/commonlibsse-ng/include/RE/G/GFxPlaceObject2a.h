@@ -16,8 +16,6 @@ namespace RE
 
 		// override (GFxPlaceObjectBase)
 		void GetPlaceObjectData(GFxPlaceObjectData& a_data) override;  // 08
-	private:
-		KEEP_FOR_RE()
 	};
 #ifndef __INTELLISENSE__
 	static_assert(sizeof(GFxPlaceObject2a) == 0x10);

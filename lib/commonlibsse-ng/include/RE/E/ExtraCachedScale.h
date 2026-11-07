@@ -20,8 +20,6 @@ namespace RE
 		// members
 		float scale3D;   // 10
 		float refScale;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraCachedScale) == 0x18);
 }

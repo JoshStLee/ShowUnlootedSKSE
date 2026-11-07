@@ -22,8 +22,6 @@ namespace RE
 		// members
 		ObjectRefHandle horseRef;  // 10
 		std::uint32_t   pad14;     // 14
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraHorse) == 0x18);
 }

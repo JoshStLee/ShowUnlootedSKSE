@@ -20,8 +20,5 @@ namespace RE
 			std::uint64_t           unk38;      // 38
 			hkMoppBvTreeShapeBase** treeShape;  // 40
 		};
-
-	private:
-		KEEP_FOR_RE()
 	};
 }

@@ -95,8 +95,6 @@ namespace RE
 
 		// members
 		Data data;  // C0 - SPIT
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(SpellItem) == 0xE8);
 }

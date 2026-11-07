@@ -211,7 +211,7 @@ namespace RE
 			Clear();
 			if (a_src.IsEmpty() == false) {
 				SetCapacity(a_memAddr, a_src.GetSize());
-				for (const_iterator it = a_src.Begin(); it != a_src.End(); ++it) {
+				for (const_iterator it = a_src.begin(); it != a_src.end(); ++it) {
 					Add(a_memAddr, *it);
 				}
 			}
@@ -624,8 +624,6 @@ namespace RE
 
 		// members
 		TableType* table;  // 00
-	private:
-		KEEP_FOR_RE()
 	};
 	// size == 0x8
 }

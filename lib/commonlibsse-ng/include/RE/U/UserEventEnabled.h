@@ -12,8 +12,6 @@ namespace RE
 		// members
 		REX::EnumSet<UEFlag, std::uint32_t> newUserEventFlag;  // 0
 		REX::EnumSet<UEFlag, std::uint32_t> oldUserEventFlag;  // 4
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(UserEventEnabled) == 0x8);
 }

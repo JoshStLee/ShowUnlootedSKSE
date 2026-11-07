@@ -32,10 +32,8 @@ namespace RE
 
 		// members
 		TESObjectCELL** cells;           // 18 - (memory allocated using 0x8 * numGrids * numGrids)
-		NiPoint3        unk20;           // 20
+		NiPoint3        worldCenter;     // 20
 		bool            land3DAttached;  // 2C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GridCellArray) == 0x30);
 };

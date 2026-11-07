@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/F/FormTypes.h"
 #include "RE/N/NiColor.h"
 #include "RE/N/NiPoint2.h"
@@ -46,8 +46,6 @@ namespace RE
 		std::uint32_t distanceInsideAtMax;  // 2C - RPLI
 		std::uint32_t count;                // 30
 		std::uint32_t pad34;                // 34
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESRegionPointList) == 0x38);
 
@@ -78,6 +76,20 @@ namespace RE
 		// add
 		virtual bool Validate();  // 3B
 
+		TESWeather* SelectWeather()
+		{
+			using func_t = decltype(&TESRegion::SelectWeather);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(16203, 16449) };
+			return func(this);
+		}
+
+		void SetCurrentWeather(TESWeather* a_weather)
+		{
+			using func_t = decltype(&TESRegion::SetCurrentWeather);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(16202, 16448) };
+			return func(this, a_weather);
+		}
+
 		// members
 		TESRegionDataList*                 dataList;        // 20
 		BSSimpleList<TESRegionPointList*>* pointLists;      // 28
@@ -85,8 +97,6 @@ namespace RE
 		TESWeather*                        currentWeather;  // 38
 		NiColor                            emittanceColor;  // 40
 		std::uint32_t                      pad4C;           // 4C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESRegion) == 0x50);
 }

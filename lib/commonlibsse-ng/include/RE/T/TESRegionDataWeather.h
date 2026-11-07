@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/T/TESRegionData.h"
 
 namespace RE
@@ -28,8 +28,6 @@ namespace RE
 
 		// members
 		BSSimpleList<WeatherType*> weatherTypes;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESRegionDataWeather) == 0x20);
 }

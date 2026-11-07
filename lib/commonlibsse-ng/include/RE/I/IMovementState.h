@@ -12,6 +12,8 @@ namespace RE
 		inline static constexpr auto RTTI = RTTI_IMovementState;
 		inline static constexpr auto VTABLE = VTABLE_IMovementState;
 
+		bool CanStrafe() const;
+
 		~IMovementState() override;  // 00
 
 		// add
@@ -34,8 +36,6 @@ namespace RE
 		virtual void  Unk_11(void) = 0;                                 // 11
 		virtual void  Unk_12(void) = 0;                                 // 12
 		virtual void  Unk_13(void) = 0;                                 // 13
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(IMovementState) == 0x8);
 }

@@ -100,7 +100,7 @@ namespace RE
 		float                                                      error;                       // 0C8
 		std::uint32_t                                              padCC;                       // 0CC
 		hkAabb                                                     bounds;                      // 0D0
-		std::uint32_t                                              defaultCollisionFilterInfo;  // 0F0
+		CFilter                                                    defaultCollisionFilterInfo;  // 0F0
 		std::uint32_t                                              padF4;                       // 0F4
 		hkpMeshMaterial*                                           meshMaterials;               // 0F8
 		std::uint16_t                                              materialStriding;            // 100
@@ -108,8 +108,6 @@ namespace RE
 		std::uint32_t                                              pad104;                      // 104
 		hkArray<hkpNamedMeshMaterial>                              namedMaterials;              // 108
 		std::uint64_t                                              pad118;                      // 118
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpCompressedMeshShape) == 0x120);
 }

@@ -50,8 +50,6 @@ namespace RE
 
 		// members
 		Data data;  // 20 - DATA
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSReferenceEffect) == 0x38);
 }

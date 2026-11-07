@@ -16,8 +16,6 @@ namespace RE
 
 		// add
 		virtual GImageInfoBase* LoadImage(const char* a_url) = 0;  // 01
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GFxImageLoader) == 0x18);
 }

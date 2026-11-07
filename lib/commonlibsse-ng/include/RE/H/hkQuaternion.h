@@ -8,8 +8,6 @@ namespace RE
 	{
 	public:
 		hkVector4 vec;  // 00
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkQuaternion) == 0x10);
 }

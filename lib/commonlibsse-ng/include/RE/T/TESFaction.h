@@ -2,8 +2,8 @@
 
 #include "RE/A/AITimeStamp.h"
 #include "RE/B/BSFixedString.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BSTHashMap.h"
-#include "RE/B/BSTList.h"
 #include "RE/F/FightReactions.h"
 #include "RE/F/FormTypes.h"
 #include "RE/T/TESForm.h"
@@ -200,8 +200,6 @@ namespace RE
 		std::int32_t                              minorCrime;             // 0F4
 		AITimeStamp                               resistArrestTimeStamp;  // 0F8
 		float                                     pcEnemyFlagTimeStamp;   // 0FC - current game time in hours
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESFaction) == 0x100);
 }

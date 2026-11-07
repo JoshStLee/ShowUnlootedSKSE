@@ -24,8 +24,6 @@ namespace RE
 		std::uint8_t                     pad21;           // 21
 		std::uint16_t                    pad22;           // 22
 		std::uint32_t                    pad24;           // 24
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(AnimationObject) == 0x28);
 
@@ -44,8 +42,6 @@ namespace RE
 		std::uint32_t                              pad04;             // 04
 		BSTArray<BSTSmartPointer<AnimationObject>> animationObjects;  // 08
 		BSSpinLock                                 lock;              // 20
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(AnimationObjects) == 0x28);
 }

@@ -97,15 +97,15 @@ namespace RE
 		{
 		public:
 			// members
-			float         sightFOV;                        // 00
-			float         fireRate;                        // 04 - Fallout leftover?
-			float         firingRumbleLeftMotorStrength;   // 08
-			float         firingRumbleRightMotorStrength;  // 0C
-			float         firingRumbleDuration;            // 10
-			float         attackShotsPerSec;               // 14 - Fallout leftover?
-			std::int8_t   numProjectiles;                  // 18
-			std::uint8_t  pad19;                           // 19
-			std::uint16_t pad1A;                           // 1A
+			float                                              sightFOV;                        // 00
+			float                                              fireRate;                        // 04 - Fallout leftover?
+			float                                              firingRumbleLeftMotorStrength;   // 08
+			float                                              firingRumbleRightMotorStrength;  // 0C
+			float                                              firingRumbleDuration;            // 10
+			REX::EnumSet<WEAPON_RUMBLE_PATTERN, std::uint32_t> rumblePattern;                   // 14 - Fallout leftover?
+			std::int8_t                                        numProjectiles;                  // 18
+			std::uint8_t                                       pad19;                           // 19
+			std::uint16_t                                      pad1A;                           // 1A
 		};
 		static_assert(sizeof(RangedData) == 0x1C);
 
@@ -272,8 +272,6 @@ namespace RE
 		BSFixedString                            embeddedNode;            // 210
 		REX::EnumSet<SOUND_LEVEL, std::uint32_t> soundLevel;              // 218 - VNAM
 		std::uint32_t                            pad21C;                  // 21C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESObjectWEAP) == 0x220);
 }

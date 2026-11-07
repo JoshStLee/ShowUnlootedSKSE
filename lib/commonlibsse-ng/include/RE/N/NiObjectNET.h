@@ -33,6 +33,7 @@ namespace RE
 		void                            DeleteExtraData(std::uint16_t a_extraDataIndex);
 		[[nodiscard]] NiTimeController* GetControllers() const;
 		NiTimeController*               GetController(const NiRTTI* a_rtti) const;
+		void                            RemoveController(NiTimeController* a_controller);
 
 		template <class T>
 		[[nodiscard]] T* GetController() const;
@@ -58,8 +59,6 @@ namespace RE
 		std::uint16_t               extraDataSize;  // 28
 		std::uint16_t               maxSize;        // 2A
 		std::uint32_t               pad2C;          // 2C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiObjectNET) == 0x30);
 

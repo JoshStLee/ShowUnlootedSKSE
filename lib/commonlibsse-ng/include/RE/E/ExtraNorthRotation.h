@@ -21,8 +21,6 @@ namespace RE
 		// members
 		float         northRot;  // 10
 		std::uint32_t pad14;     // 14
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraNorthRotation) == 0x18);
 }

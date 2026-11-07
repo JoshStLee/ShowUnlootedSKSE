@@ -2,6 +2,7 @@
 
 #include "RE/B/BGSKeyword.h"
 #include "RE/B/BSContainer.h"
+#include "RE/B/BSTEvent.h"
 #include "RE/B/BaseFormComponent.h"
 
 namespace RE
@@ -55,7 +56,6 @@ namespace RE
 
 	private:
 		void CopyKeywords(const std::vector<RE::BGSKeyword*>& a_copiedData);
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSKeywordForm) == 0x18);
 }

@@ -23,8 +23,6 @@ namespace RE
 		// members
 		NiPointer<NiAVObject> targetRoot;    // ED0
 		NiAVObject*           boundsObject;  // ED8
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSParticleShaderObjectEmitter) == 0xEE0);
 }

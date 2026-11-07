@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RE/B/BGSPickupPutdownSounds.h"
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/F/FormTypes.h"
 #include "RE/T/TESBoundObject.h"
 #include "RE/T/TESFullName.h"
@@ -53,8 +53,6 @@ namespace RE
 		TESActorBase*           unk98;  // 98
 		BSSimpleList<TESQuest*> unkA0;  // A0
 		std::uint64_t           unkB0;  // B0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSNote) == 0xB8);
 }

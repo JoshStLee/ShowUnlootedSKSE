@@ -17,8 +17,6 @@ namespace RE
 
 		// members
 		NiAllocator* allocator;  // 00
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiMemManager) == 0x8);
 }

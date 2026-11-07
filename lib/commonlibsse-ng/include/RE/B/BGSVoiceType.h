@@ -50,8 +50,6 @@ namespace RE
 		std::uint16_t   pad22;         // 22
 		std::uint16_t   pad24;         // 24
 		BSString        formEditorID;  // 28 - EDID
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSVoiceType) == 0x38);
 }

@@ -42,8 +42,6 @@ namespace RE
 		BSTArray<DismemberedLimb*>                              dismemberedLimbs;  // 20
 		REX::EnumSet<BGSBodyPartDefs::LIMB_ENUM, std::uint32_t> lastHitLimb;       // 38
 		std::uint32_t                                           pad3C;             // 3C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraDismemberedLimbs) == 0x40);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RE/B/BSExtraData.h"
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/E/ExtraDataTypes.h"
 
 namespace RE
@@ -30,8 +30,6 @@ namespace RE
 
 		// members
 		BSSimpleList<RunOncePackage*>* packages;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraRunOncePacks) == 0x18);
 }

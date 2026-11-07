@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RE/N/NiParticlesData.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -15,8 +16,6 @@ namespace RE
 		std::uint16_t unk18;       // 18
 		std::uint16_t unk1A;       // 1A
 		std::uint32_t pad1C;       // 1C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiParticleInfo) == 0x20);
 
@@ -54,29 +53,12 @@ namespace RE
 		virtual std::uint16_t AddParticle();            // 2A
 		virtual void          ResolveAddedParticles();  // 2B
 
-		[[nodiscard]] inline PSYS_RUNTIME_DATA& GetPSysRuntimeData() noexcept
-		{
-			return REL::RelocateMember<PSYS_RUNTIME_DATA>(this, 0x90, 0xA8);
-		}
-
-		[[nodiscard]] inline const PSYS_RUNTIME_DATA& GetPSysRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<PSYS_RUNTIME_DATA>(this, 0x90, 0xA8);
-		}
-
+		RUNTIME_DATA_ACCESSOR_EX(PSYS_RUNTIME_DATA, GetPSysRuntimeData, 0x90, 0xA8);
 		// members
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT;
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(NiPSysData) == 0xA8);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(NiPSysData) == 0xA8);
-#else
-	static_assert(sizeof(NiPSysData) == 0x10);
-#endif
+	STATIC_ASSERT_SIZE(NiPSysData, 0xA8, 0xA8, 0xC0, 0x10);
 }
 #undef RUNTIME_DATA_CONTENT

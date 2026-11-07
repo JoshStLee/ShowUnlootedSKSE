@@ -31,8 +31,6 @@ namespace RE
 
 		// members
 		BSFixedString fullName;  // 08 - FULL
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESFullName) == 0x10);
 }

@@ -44,8 +44,6 @@ namespace RE
 		std::uint32_t                           combatCount;             // 5C
 		std::uint32_t                           groupCount;              // 60
 		std::uint32_t                           unk64;                   // 64
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(CombatManager) == 0x68);
 }

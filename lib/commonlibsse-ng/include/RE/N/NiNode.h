@@ -3,6 +3,7 @@
 #include "RE/N/NiAVObject.h"
 #include "RE/N/NiSmartPointer.h"
 #include "RE/N/NiTArray.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -39,7 +40,7 @@ namespace RE
 		void        UpdateRigidDownwardPass(NiUpdateData& a_data, std::uint32_t a_arg2) override;                                // 2E
 		void        UpdateWorldBound() override;                                                                                 // 2F
 		void        UpdateTransformAndBounds(NiUpdateData& a_data) override;                                                     // 31
-		void        OnVisible(NiCullingProcess& a_process) override;                                                             // 34
+		void        OnVisible(NiCullingProcess& a_process, std::int32_t a_alphaGroupIndex) override;                             // 34
 #endif
 
 		// add
@@ -55,15 +56,7 @@ namespace RE
 
 		static NiNode* Create(std::uint16_t a_arrBufLen = 0);
 
-		[[nodiscard]] inline NiTObjectArray<NiPointer<NiAVObject>>& GetChildren() noexcept
-		{
-			return REL::RelocateMember<NiTObjectArray<NiPointer<NiAVObject>>>(this, 0x110, 0x138);
-		}
-
-		[[nodiscard]] inline const NiTObjectArray<NiPointer<NiAVObject>>& GetChildren() const noexcept
-		{
-			return REL::RelocateMember<NiTObjectArray<NiPointer<NiAVObject>>>(this, 0x110, 0x138);
-		}
+		RUNTIME_DATA_ACCESSOR_EX(NiTObjectArray<NiPointer<NiAVObject>>, GetChildren, 0x110, 0x138);
 
 		void DetachChild(NiAVObject* a_child);
 		void DetachChild(NiAVObject* a_child, NiPointer<NiAVObject>& a_childOut);
@@ -79,13 +72,6 @@ namespace RE
 
 	protected:
 		NiNode* Ctor(std::uint16_t a_arrBufLen);
-
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(NiNode) == 0x128);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(NiNode) == 0x150);
-#endif
+	STATIC_ASSERT_SIZE(NiNode, 0x128, 0x150);
 }

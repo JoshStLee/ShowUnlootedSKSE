@@ -43,8 +43,6 @@ namespace RE
 
 		// override (TESLeveledList)
 		[[nodiscard]] bool GetCanContainFormsOfType(FormType a_type) const override;  // 07
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESLevSpell) == 0x58);
 }

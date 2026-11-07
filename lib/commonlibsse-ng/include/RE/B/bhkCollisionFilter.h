@@ -2,6 +2,7 @@
 
 #include "RE/B/BSFixedString.h"
 #include "RE/B/BSTSingleton.h"
+#include "RE/C/CollisionLayers.h"
 #include "RE/H/hkpCollisionFilter.h"
 
 namespace RE
@@ -29,6 +30,12 @@ namespace RE
 			return nextSystemGroup;
 		}
 
+		// Sets or clears the mutual collision bit between two layers in layerBitfields.
+		void SetLayerPairCollisionEnabled(COL_LAYER a_layerA, COL_LAYER a_layerB, bool a_enabled);
+
+		// Sets layerBitfields[a_layer] to a_mask and mirrors each bit into the other layers' rows.
+		void SetLayerBitfield(COL_LAYER a_layer, std::uint64_t a_mask);
+
 		// members
 		std::uint32_t unk48;                     // 048
 		std::uint32_t nextSystemGroup;           // 04C
@@ -40,8 +47,6 @@ namespace RE
 		BSFixedString collisionLayerNames[64];   // 3E0
 		std::uint8_t  unk5E0[256];               // 5E0
 		BSFixedString collisionBoneNames[32];    // 6E0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(bhkCollisionFilter) == 0x7E0);
 }

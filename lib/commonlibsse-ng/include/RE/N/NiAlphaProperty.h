@@ -38,6 +38,11 @@ namespace RE
 			kNever
 		};
 
+		enum class AlphaFlags
+		{
+			kIsEditorModifiable = 1 << 15
+		};
+
 		~NiAlphaProperty() override;  // 00
 
 		// override (NiProperty)
@@ -64,8 +69,6 @@ namespace RE
 		std::uint8_t  alphaThreshold;  // 32
 		std::uint8_t  pad33;           // 33
 		std::uint32_t pad34;           // 34
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiAlphaProperty) == 0x38);
 }

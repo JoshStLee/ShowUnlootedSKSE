@@ -70,8 +70,6 @@ namespace RE
 
 		// members
 		Data data;  // 90 - ENIT
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(EnchantmentItem) == 0xC0);
 }

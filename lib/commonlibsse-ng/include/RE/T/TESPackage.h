@@ -136,6 +136,149 @@ namespace RE
 		kKeepAnEyeOn = 48
 	};
 
+	// One entry of a package's procedure sequence: the sequence for a PACKAGE_PROCEDURE_TYPE ends with kDone.
+	// Named after the number GetCurrentAIProcedure reports for it (see CONDITION_AI_PROCEDURE).
+	enum class AI_PROCEDURE_TYPE : std::uint32_t
+	{
+		kTravel = 0,
+		kWander = 1,
+		kActivate = 2,
+		kAcquire = 3,
+		kSleep = 4,
+		kEat = 5,
+		kFollow = 6,
+		kEscort = 7,
+		kAlarm = 8,
+		kFlee = 9,
+		kYield = 10,
+		kDialogue = 11,
+		kWait = 12,
+		kTravelTarget = 13,
+		kPursue = 14,
+		kGreet = 15,
+		kCreateFollow = 16,
+		kObserveCombat = 17,
+		kGreetDead = 19,
+		kGetUp = 21,
+		kMountHorse = 22,
+		kDismountHorse = 23,
+		kDoNothing = 24,
+		kAccompany = 26,
+		kUseItemAt = 27,
+		kSandman = 28,
+		kWaitAmbush = 29,
+		kSurface = 30,
+		kWaitForSpell = 31,
+		kChooseCast = 32,
+		kFleeNonCombat = 33,
+		kRemoveWornItems = 34,
+		kSearch = 35,
+		kClearMountPosition = 36,
+		kAvoidArea = 38,
+		kUnequipArmor = 39,
+		kTakeBackItem = 40,
+		kSandbox = 41,
+		kUseIdleMarker = 42,
+		kPatrol = 43,
+		kGuard = 46,
+		kDialogueActivate = 48,
+		kUseWeapon = 49,
+		kMovementBlocked = 50,
+		kCannibalFeed = 51,
+		kDone = 54
+	};
+
+	// Result of the GetCurrentAIProcedure condition function. Names are the Fallout 3 names used on
+	// https://ck.uesp.net/wiki/GetCurrentAIProcedure; 13, 25, 26 and 38 are never returned, and kNone is returned
+	// for procedures with no number.
+	enum class CONDITION_AI_PROCEDURE : std::int32_t
+	{
+		kNone = -1,
+		kTravel = 0,
+		kActivate = 1,
+		kAcquire = 2,
+		kWait = 3,
+		kDialogue = 4,
+		kGreet = 5,
+		kGreetDead = 6,
+		kWander = 7,
+		kSleep = 8,
+		kObserveCombat = 9,
+		kEat = 10,
+		kFollow = 11,
+		kEscort = 12,
+		kAlarm = 14,
+		kPursue = 15,
+		kFlee = 16,
+		kDone = 17,
+		kYield = 18,
+		kTravelTarget = 19,
+		kCreateFollow = 20,
+		kGetUp = 21,
+		kMountHorse = 22,
+		kDismountHorse = 23,
+		kDoNothing = 24,
+		kAccompany = 27,
+		kUseItemAt = 28,
+		kSandman = 29,
+		kWaitAmbush = 30,
+		kSurface = 31,
+		kWaitForSpell = 32,
+		kChooseCast = 33,
+		kFleeNonCombat = 34,
+		kRemoveWornItems = 35,
+		kSearch = 36,
+		kClearMountPosition = 37,
+		kAvoidArea = 39,
+		kUnequipArmor = 40,
+		kPatrol = 41,
+		kUseWeapon = 42,
+		kDialogueActivate = 43,
+		kGuard = 44,
+		kSandbox = 45,
+		kUseIdleMarker = 46,
+		kTakeBackItem = 47,
+		kSitting = 48,
+		kMovementBlocked = 49,
+		kCannibalFeed = 50
+	};
+
+	// Result of the GetCurrentAIPackage condition function, by PACKAGE_TYPE.
+	// This is not the PACKAGE_TYPE ordinal: Find, Package, Package Template and every type above kAvoidPlayer give kNone.
+	enum class CONDITION_AI_PACKAGE : std::int32_t
+	{
+		kNone = -1,
+		kExplore = 0,
+		kFollow = 1,
+		kEscort = 2,
+		kEat = 3,
+		kSleep = 4,
+		kInGameDialogue = 6,
+		kActivate = 7,
+		kAlarm = 8,
+		kSpectator = 9,
+		kFlee = 10,
+		kTrespass = 11,
+		kReactToDead = 12,
+		kWander = 13,
+		kTravel = 14,
+		kAccompany = 15,
+		kUseItemAt = 16,
+		kAmbush = 17,
+		kFleeNotCombat = 18,
+		kCastMagic = 19,
+		kGetUpFromChairBed = 21,
+		kDoNothing = 24,
+		kSurface = 28,
+		kSearchForAttacker = 29,
+		kAvoidPlayer = 32,
+		kUseWeapon = 33,
+		kDialogue = 34,
+		kGuard = 35,
+		kSandbox = 36,
+		kPatrol = 37
+	};
+
 	enum class PACK_EVENT_ACTION_TYPE
 	{
 		kBegin = 0,
@@ -238,8 +381,6 @@ namespace RE
 		Target        target;    // 08
 		std::int32_t  value;     // 10
 		std::uint32_t pad14;     // 14
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(PackageTarget) == 0x18);
 
@@ -279,8 +420,6 @@ namespace RE
 	public:
 		// members
 		PACK_SCHED_DATA psData;  // 0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(PackageSchedule) == 0xC);
 
@@ -307,8 +446,6 @@ namespace RE
 		REX::EnumSet<PACK_EVENT_ACTION_TYPE, std::uint32_t> type;   // 08
 		std::uint32_t                                       pad0C;  // 0C
 		TopicData                                           topic;  // 10 - PDTO
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(PackageEventAction) == 0x20);
 
@@ -357,14 +494,14 @@ namespace RE
 		[[nodiscard]] virtual bool IsTargetAtLocation(Actor* a_actor, std::int32_t a_arg2);                                        // 3E
 		[[nodiscard]] virtual bool IsPackageOwner(Actor* a_actor);                                                                 // 3F - { return true; }
 
-		static TESPackage* CreatePackage(PACKAGE_PROCEDURE_TYPE a_type)
+		static TESPackage* CreatePackage(PACKAGE_TYPE a_type)
 		{
 			using func_t = decltype(&TESPackage::CreatePackage);
 			static REL::Relocation<func_t> func{ RELOCATION_ID(28732, 29496) };
 			return func(a_type);
 		}
 
-		void SetPackType(PACKAGE_PROCEDURE_TYPE a_type)
+		void SetPackType(PACKAGE_TYPE a_type)
 		{
 			using func_t = decltype(&TESPackage::SetPackType);
 			static REL::Relocation<func_t> func{ RELOCATION_ID(28751, 29525) };
@@ -388,8 +525,6 @@ namespace RE
 		PackageEventAction                                  onChange;        // B8
 		REX::EnumSet<PACKAGE_PROCEDURE_TYPE, std::uint32_t> procedureType;   // D8
 		volatile std::uint32_t                              refCount;        // DC
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESPackage) == 0xE0);
 }

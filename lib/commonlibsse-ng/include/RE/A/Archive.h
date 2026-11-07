@@ -32,8 +32,6 @@ namespace RE
 		std::uint64_t unk218;  // 218
 		std::uint64_t unk220;  // 220
 		std::uint64_t unk228;  // 228
-	private:
-		KEEP_FOR_RE()
 	};
 #if defined(EXCLUSIVE_SKYRIM_FLAT)
 	static_assert(sizeof(Archive) == 0x230);

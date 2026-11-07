@@ -30,12 +30,21 @@ namespace RE
 
 		constexpr BSTArrayBase() noexcept = default;
 		constexpr BSTArrayBase(const BSTArrayBase&) noexcept = default;
-		constexpr BSTArrayBase(BSTArrayBase&&) noexcept = default;
+		constexpr BSTArrayBase(BSTArrayBase&& a_rhs) noexcept :
+			_size(a_rhs.size())
+		{
+			a_rhs._size = 0;
+		}
 
 		inline ~BSTArrayBase() noexcept { _size = 0; }
 
 		BSTArrayBase& operator=(const BSTArrayBase&) noexcept = default;
-		BSTArrayBase& operator=(BSTArrayBase&&) noexcept = default;
+		BSTArrayBase& operator=(BSTArrayBase&& a_rhs) noexcept
+		{
+			_size = a_rhs.size();
+			a_rhs._size = 0;
+			return *this;
+		}
 
 		[[nodiscard]] constexpr bool      empty() const noexcept { return _size == 0; }
 		[[nodiscard]] constexpr size_type size() const noexcept { return _size; }
@@ -120,12 +129,11 @@ namespace RE
 		inline void* allocate(std::size_t a_size)
 		{
 			const auto mem = malloc(a_size);
-			if (!mem) {
-				stl::report_and_fail("out of memory"sv);
-			} else {
-				std::memset(mem, 0, a_size);
-				return mem;
-			}
+			if (!mem)
+				stl::report_and_fail("out of memory");
+
+			std::memset(mem, 0, a_size);
+			return mem;
 		}
 
 		inline void deallocate(void* a_ptr) { free(a_ptr); }
@@ -198,12 +206,11 @@ namespace RE
 		{
 			if (a_size > N) {
 				const auto mem = malloc(a_size);
-				if (!mem) {
-					stl::report_and_fail("out of memory"sv);
-				} else {
-					std::memset(mem, 0, a_size);
-					return mem;
-				}
+				if (!mem)
+					stl::report_and_fail("out of memory");
+
+				std::memset(mem, 0, a_size);
+				return mem;
 			} else {
 				return _data.local;
 			}
@@ -666,7 +673,14 @@ namespace RE
 				const auto oldCapacity = capacity();
 				if (newData) {
 					const auto bytesToCopy = (std::min)(oldCapacity, a_newCapacity) * sizeof(value_type);
+#ifdef __clang__
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Wnontrivial-memaccess"
+#endif
 					std::memcpy(newData, oldData, bytesToCopy);
+#ifdef __clang__
+#	pragma clang diagnostic pop
+#endif
 				}
 				deallocate(oldData);
 			}
@@ -822,7 +836,7 @@ namespace RE
 		[[nodiscard]] inline const_iterator end() const noexcept { return data() + size(); }
 		[[nodiscard]] inline const_iterator cend() const noexcept { return end(); }
 
-		[[nodiscard]] constexpr bool empty() const noexcept { return size() != 0; }
+		[[nodiscard]] constexpr bool empty() const noexcept { return size() == 0; }
 
 		[[nodiscard]] constexpr size_type size() const noexcept { return _size; }
 

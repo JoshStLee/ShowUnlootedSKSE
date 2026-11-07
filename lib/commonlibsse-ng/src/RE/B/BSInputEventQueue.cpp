@@ -8,130 +8,130 @@ namespace RE
 		return *singleton;
 	}
 
-	void BSInputEventQueue::AddButtonEvent(INPUT_DEVICE a_device, std::int32_t a_id, float a_value, float a_duration)
+	template <>
+	ButtonEvent* BSInputEventQueue::GetCachedEvent<ButtonEvent>()
 	{
 		if (buttonEventCount < MAX_BUTTON_EVENTS) {
-			auto& cachedEvent = GetRuntimeData().buttonEvents[buttonEventCount];
-			cachedEvent.GetRuntimeData().value = a_value;
-			cachedEvent.GetRuntimeData().heldDownSecs = a_duration;
-			cachedEvent.device = a_device;
-			cachedEvent.idCode = a_id;
-			cachedEvent.userEvent = {};
-			cachedEvent.AsVRWandEvent()->unkVR28 = -1;
-			PushOntoInputQueue(&cachedEvent);
-			++buttonEventCount;
+			return CachedEventAt<ButtonEvent>(kButtonEventArray, buttonEventCount);
 		}
+
+		return nullptr;
 	}
 
-	void BSInputEventQueue::AddCharEvent(std::uint32_t a_keyCode)
+	template <>
+	CharEvent* BSInputEventQueue::GetCachedEvent<CharEvent>()
 	{
 		if (charEventCount < MAX_CHAR_EVENTS) {
-			auto& cachedEvent = GetRuntimeData().charEvents[charEventCount];
-			cachedEvent.keyCode = a_keyCode;
-
-			PushOntoInputQueue(&cachedEvent);
-			++charEventCount;
+			return CachedEventAt<CharEvent>(kCharEventArray, charEventCount);
 		}
+
+		return nullptr;
 	}
 
-	void BSInputEventQueue::AddMouseMoveEvent(std::int32_t a_mouseInputX, std::int32_t a_mouseInputY)
+	template <>
+	MouseMoveEvent* BSInputEventQueue::GetCachedEvent<MouseMoveEvent>()
 	{
 		if (mouseEventCount < MAX_MOUSE_EVENTS) {
-			auto& cachedEvent = GetRuntimeData().mouseEvents[mouseEventCount];
-			cachedEvent.mouseInputX = a_mouseInputX;
-			cachedEvent.mouseInputY = a_mouseInputY;
-			cachedEvent.userEvent = {};
-
-			PushOntoInputQueue(&cachedEvent);
-			++mouseEventCount;
+			return CachedEventAt<MouseMoveEvent>(kMouseEventArray, mouseEventCount);
 		}
+
+		return nullptr;
 	}
 
-	void BSInputEventQueue::AddThumbstickEvent(ThumbstickEvent::InputType a_id, float a_xValue, float a_yValue)
+	template <>
+	ThumbstickEvent* BSInputEventQueue::GetCachedEvent<ThumbstickEvent>()
 	{
 		if (thumbstickEventCount < MAX_THUMBSTICK_EVENTS) {
-			auto& cachedEvent = GetRuntimeData().thumbstickEvents[thumbstickEventCount];
-			cachedEvent.xValue = a_xValue;
-			cachedEvent.yValue = a_yValue;
-			cachedEvent.device = INPUT_DEVICE::kGamepad;
-			cachedEvent.idCode = a_id;
-			cachedEvent.userEvent = {};
-
-			PushOntoInputQueue(&cachedEvent);
-			++thumbstickEventCount;
+			return CachedEventAt<ThumbstickEvent>(kThumbstickEventArray, thumbstickEventCount);
 		}
+
+		return nullptr;
 	}
 
-	void BSInputEventQueue::AddConnectEvent(INPUT_DEVICE a_device, bool a_connected)
+	template <>
+	DeviceConnectEvent* BSInputEventQueue::GetCachedEvent<DeviceConnectEvent>()
 	{
 		if (connectEventCount < MAX_CONNECT_EVENTS) {
-			auto& cachedEvent = GetRuntimeData().connectEvents[connectEventCount];
-			cachedEvent.device = a_device;
-			cachedEvent.connected = a_connected;
-
-			PushOntoInputQueue(&cachedEvent);
-			++connectEventCount;
+			return CachedEventAt<DeviceConnectEvent>(kConnectEventArray, connectEventCount);
 		}
+
+		return nullptr;
 	}
 
-	void BSInputEventQueue::AddKinectEvent(const BSFixedString& a_userEvent, const BSFixedString& a_heard)
+	template <>
+	KinectEvent* BSInputEventQueue::GetCachedEvent<KinectEvent>()
 	{
 		if (kinectEventCount < MAX_KINECT_EVENTS) {
-			auto& cachedEvent = GetRuntimeData().kinectEvents[kinectEventCount];
-			cachedEvent.userEvent = a_userEvent;
-			cachedEvent.heard = a_heard;
-
-			PushOntoInputQueue(&cachedEvent);
-			++kinectEventCount;
+			return CachedEventAt<KinectEvent>(kKinectEventArray, kinectEventCount);
 		}
+
+		return nullptr;
 	}
 
-	void BSInputEventQueue::AddButtonEvent(INPUT_DEVICE a_device, std::int32_t a_arg2, std::int32_t a_id, float a_value, float a_duration)
+	template <>
+	void BSInputEventQueue::AdvanceCount<ButtonEvent>()
+	{
+		++buttonEventCount;
+	}
+
+	template <>
+	void BSInputEventQueue::AdvanceCount<CharEvent>()
+	{
+		++charEventCount;
+	}
+
+	template <>
+	void BSInputEventQueue::AdvanceCount<MouseMoveEvent>()
+	{
+		++mouseEventCount;
+	}
+
+	template <>
+	void BSInputEventQueue::AdvanceCount<ThumbstickEvent>()
+	{
+		++thumbstickEventCount;
+	}
+
+	template <>
+	void BSInputEventQueue::AdvanceCount<DeviceConnectEvent>()
+	{
+		++connectEventCount;
+	}
+
+	template <>
+	void BSInputEventQueue::AdvanceCount<KinectEvent>()
+	{
+		++kinectEventCount;
+	}
+
+#ifdef ENABLE_SKYRIM_VR
+	void BSInputEventQueue::AddButtonEvent(INPUT_DEVICE a_device, std::int32_t a_arg2, std::int32_t a_id, float a_value, float a_duration, const BSFixedString& a_userEvent)
 	{
 		if SKYRIM_REL_CONSTEXPR (REL::Module::IsVR()) {
-			if (buttonEventCount < MAX_BUTTON_EVENTS) {
-				auto& cachedEvent = GetRuntimeData().buttonEvents[buttonEventCount];
-				cachedEvent.GetRuntimeData().value = a_value;
-				cachedEvent.GetRuntimeData().heldDownSecs = a_duration;
-				cachedEvent.device = a_device;
-				cachedEvent.idCode = a_id;
-				cachedEvent.userEvent = {};
-				cachedEvent.AsVRWandEvent()->unkVR28 = a_arg2;
-				PushOntoInputQueue(&cachedEvent);
-				++buttonEventCount;
-			}
+			AddEvent<ButtonEvent>(a_device, a_arg2, a_id, a_value, a_duration, a_userEvent);
 		}
 	}
 
 	void BSInputEventQueue::AddThumbstickEvent(ThumbstickEvent::InputType a_id, INPUT_DEVICE a_device, float a_xValue, float a_yValue)
 	{
 		if SKYRIM_REL_CONSTEXPR (REL::Module::IsVR()) {
-			if (thumbstickEventCount < MAX_THUMBSTICK_EVENTS) {
-				auto& cachedEvent = GetRuntimeData().thumbstickEvents[thumbstickEventCount];
-				cachedEvent.xValue = a_xValue;
-				cachedEvent.yValue = a_yValue;
-				cachedEvent.device = a_device;
-				cachedEvent.idCode = a_id;
-				cachedEvent.userEvent = {};
-
-				PushOntoInputQueue(&cachedEvent);
-				++thumbstickEventCount;
-			}
+			AddEvent<ThumbstickEvent>(a_id, a_device, a_xValue, a_yValue);
 		}
 	}
+#endif
 
 	void BSInputEventQueue::PushOntoInputQueue(InputEvent* a_event)
 	{
-		if (!GetRuntimeData().queueHead) {
-			GetRuntimeData().queueHead = a_event;
+		if (!GetQueueHead()) {
+			GetQueueHead() = a_event;
 		}
 
-		if (GetRuntimeData().queueTail) {
-			GetRuntimeData().queueTail->next = a_event;
+		if (GetQueueTail()) {
+			GetQueueTail()->next = a_event;
 		}
 
-		GetRuntimeData().queueTail = a_event;
-		GetRuntimeData().queueTail->next = nullptr;
+		GetQueueTail() = a_event;
+		GetQueueTail()->next = nullptr;
 	}
 
 	void BSInputEventQueue::ClearInputQueue()
@@ -142,7 +142,7 @@ namespace RE
 		mouseEventCount = 0;
 		charEventCount = 0;
 		buttonEventCount = 0;
-		GetRuntimeData().queueTail = nullptr;
-		GetRuntimeData().queueHead = nullptr;
+		GetQueueTail() = nullptr;
+		GetQueueHead() = nullptr;
 	}
 }

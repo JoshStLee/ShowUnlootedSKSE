@@ -7,6 +7,8 @@
 #include "RE/B/BGSKeywordForm.h"
 #include "RE/B/BGSPickupPutdownSounds.h"
 #include "RE/B/BSTArray.h"
+#include "RE/B/BSTSmartPointer.h"
+#include "RE/B/BipedAnim.h"
 #include "RE/F/FormTypes.h"
 #include "RE/T/TESBipedModelForm.h"
 #include "RE/T/TESBoundObject.h"
@@ -19,6 +21,8 @@
 
 namespace RE
 {
+	class InventoryEntryData;
+
 	class TESObjectARMO :
 		public TESBoundObject,             // 000
 		public TESFullName,                // 030
@@ -66,14 +70,13 @@ namespace RE
 		[[nodiscard]] float          GetArmorRating();
 		[[nodiscard]] TESObjectARMA* GetArmorAddon(TESRace* a_race);
 		[[nodiscard]] TESObjectARMA* GetArmorAddonByMask(TESRace* a_race, BipedObjectSlot a_slot);
+		static void                  InitWornArmor(TESNPC* a_npc, Actor* a_actor, BSTSmartPointer<BipedAnim>* a_biped, InventoryEntryData* a_entry);
 
 		// members
 		std::uint32_t            armorRating;    // 200 - DNAM - CK value * 100 as a std::uint32_t
 		std::uint32_t            pad204;         // 204
 		BSTArray<TESObjectARMA*> armorAddons;    // 208
 		TESObjectARMO*           templateArmor;  // 220 - TNAM
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESObjectARMO) == 0x228);
 }

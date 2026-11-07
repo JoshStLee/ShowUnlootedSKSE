@@ -8,6 +8,7 @@ namespace RE
 {
 	class BSGeometry;
 	class NiTexture;
+	class TESWeather;
 
 	class Clouds : public SkyObject
 	{
@@ -34,11 +35,9 @@ namespace RE
 		float                 alphas[kTotalLayers];        // 490
 		std::uint16_t         numLayers;                   // 510
 		bool                  forceUpdate;                 // 512
-		std::uint8_t          pad513;                      // 513
+		bool                  unk513;                      // 513
 		std::uint32_t         pad514;                      // 514
-		std::uint64_t         pad520;                      // 520
-	private:
-		KEEP_FOR_RE()
+		TESWeather*           lastWeather;                 // 518
 	};
 	static_assert(sizeof(Clouds) == 0x520);
 }

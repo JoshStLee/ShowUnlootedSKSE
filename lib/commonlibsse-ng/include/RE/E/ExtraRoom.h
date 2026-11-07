@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		NiPointer<BSMultiBoundRoom> room;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraRoom) == 0x18);
 }

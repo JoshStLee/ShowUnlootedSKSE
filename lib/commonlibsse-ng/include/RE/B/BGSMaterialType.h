@@ -53,8 +53,6 @@ namespace RE
 		float                             buoyancy;            // 40 - BNAM
 		REX::EnumSet<FLAG, std::uint32_t> flags;               // 44 - FNAM
 		BGSImpactDataSet*                 havokImpactDataSet;  // 48 - HNAM
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSMaterialType) == 0x50);
 }

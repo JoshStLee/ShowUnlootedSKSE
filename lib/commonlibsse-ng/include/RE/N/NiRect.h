@@ -29,8 +29,6 @@ namespace RE
 		T right;   // ??
 		T top;     // ??
 		T bottom;  // ??
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiRect<float>) == 0x10);
 }

@@ -51,8 +51,6 @@ namespace RE
 		BGSLoadGameSubBuffer                   loadedDataSubBuffer;  // 88
 		BSTSmartPointer<BGSArtObjectCloneTask> cloneTask;            // 90
 		bool                                   animationComplete;    // 98
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(SummonPlacementEffect) == 0xA0);
 }

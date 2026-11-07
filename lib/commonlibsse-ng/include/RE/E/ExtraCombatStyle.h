@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		TESCombatStyle* combatStyle;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraCombatStyle) == 0x18);
 }

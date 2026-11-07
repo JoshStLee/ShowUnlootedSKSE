@@ -20,14 +20,12 @@ namespace RE
 		virtual void                        InitSound(TESForm* a_src);  // 03
 		virtual bool                        LoadSound(TESFile* a_mod);  // 04
 		[[nodiscard]] virtual std::uint32_t GetType() const = 0;        // 05 - CRC hash of class name
-		virtual void                        Unk_06(void) = 0;           // 06
+		virtual float                       GetMaxAudibleDistance();    // 06
 
 		// members
 		BGSSoundCategory* category;              // 08 - GNAM
 		FormID            alternateSoundFormID;  // 10 - SNAM
 		std::uint32_t     pad14;                 // 14
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSSoundDescriptor) == 0x18);
 }

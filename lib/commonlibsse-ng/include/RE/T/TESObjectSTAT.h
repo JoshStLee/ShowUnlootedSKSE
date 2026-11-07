@@ -70,8 +70,6 @@ namespace RE
 
 		// members
 		TESObjectSTATData data;  // 68 - DNAM
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESObjectSTAT) == 0x80);
 }

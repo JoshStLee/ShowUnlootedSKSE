@@ -87,8 +87,6 @@ namespace RE
 		// members
 		Data    data;         // 138 - ENIT
 		TESIcon messageIcon;  // 158
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(AlchemyItem) == 0x168);
 }

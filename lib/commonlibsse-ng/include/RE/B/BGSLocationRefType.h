@@ -25,8 +25,6 @@ namespace RE
 
 		// override (BGSKeyword)
 		void InitItemImpl() override;  // 13
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSLocationRefType) == 0x28);
 }

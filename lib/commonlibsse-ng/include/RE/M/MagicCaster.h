@@ -5,6 +5,7 @@
 #include "RE/B/BSTArray.h"
 #include "RE/B/bhkPickData.h"
 #include "RE/M/MagicSystem.h"
+#include "RE/M/MagicTarget.h"
 
 namespace RE
 {
@@ -13,7 +14,6 @@ namespace RE
 	class BGSSaveGameBuffer;
 	class BGSLoadGameBuffer;
 	class MagicItem;
-	class MagicTarget;
 	class NiNode;
 	class TESBoundObject;
 	class TESObjectCELL;
@@ -40,6 +40,21 @@ namespace RE
 			kUnk08,  // Interrupt
 			kUnk09,  // Interrupt/Deselect
 		};
+
+		class PostCreationCallback : public MagicTarget::IPostCreationModification
+		{
+		public:
+			inline static constexpr auto RTTI = RTTI_MagicCaster__PostCreationCallback;
+
+			~PostCreationCallback() override;  // 00
+
+			// override (IPostCreationModification)
+			void ModifyActiveEffect(ActiveEffect* a_effect) override;  // 01
+
+			// members
+			std::uint64_t unk08[8];
+		};
+		static_assert(sizeof(PostCreationCallback) == 0x48);
 
 		virtual ~MagicCaster();  // 00
 
@@ -80,7 +95,7 @@ namespace RE
 		void         InterruptCast(bool a_refund);
 		void         PlayReleaseSound(MagicItem* a_item);
 		void         SetCurrentSpell(MagicItem* a_item);
-		bool         TestProjectilePlacement(const Effect& a_effect, const bhkPickData& a_pickData);
+		static bool  TestProjectilePlacement(const Effect& a_effect, const bhkPickData& a_pickData);
 		void         UpdateImpl(float a_delta);
 
 		// members
@@ -94,8 +109,6 @@ namespace RE
 		float                              magnitudeOverride;  // 3C
 		float                              nextTargetUpdate;   // 40
 		float                              projectileTimer;    // 44
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(MagicCaster) == 0x48);
 }

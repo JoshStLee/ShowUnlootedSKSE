@@ -47,8 +47,6 @@ namespace RE
 
 		// members
 		BSTHashMap<std::uint32_t, TextureEntry> textures;  // 18
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSScaleformImageLoader) == 0x48);
 }

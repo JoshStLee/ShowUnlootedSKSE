@@ -51,7 +51,7 @@ namespace RE
 
 		[[nodiscard]] COL_LAYER GetCollisionLayer() const
 		{
-			return static_cast<COL_LAYER>(broadPhaseHandle.collisionFilterInfo & 0x7F);
+			return broadPhaseHandle.collisionFilterInfo.GetCollisionLayer();
 		}
 
 		[[nodiscard]] void* GetOwner() const
@@ -73,8 +73,6 @@ namespace RE
 		BoundingVolumeData       boundingVolumeData;       // 30
 		float                    allowedPenetrationDepth;  // 68
 		std::uint32_t            pad6C;                    // 6C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpCollidable) == 0x70);
 }

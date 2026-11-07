@@ -23,7 +23,8 @@ namespace RE
 		};
 		static_assert(sizeof(LinkedRef) == 0x10);
 
-		~ExtraLinkedRef() override;  // 00
+		ExtraLinkedRef();
+		~ExtraLinkedRef() override = default;  // 00
 
 		// override (BSExtraData)
 		ExtraDataType GetType() const override;                             // 01 - { return kLinkedRef; }
@@ -31,8 +32,6 @@ namespace RE
 
 		// members
 		BSTSmallArray<LinkedRef> linkedRefs;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraLinkedRef) == 0x30);
 }

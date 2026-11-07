@@ -20,8 +20,5 @@ namespace RE
 		};
 
 		static BSTEventSource<Event>* GetEventSource();
-
-	private:
-		KEEP_FOR_RE()
 	};
 }

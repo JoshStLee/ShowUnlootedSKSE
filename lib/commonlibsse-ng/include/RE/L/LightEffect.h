@@ -25,8 +25,6 @@ namespace RE
 
 		// members
 		NiPointer<NiPointLight> light;  // 90
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(LightEffect) == 0x98);
 }

@@ -43,8 +43,6 @@ namespace RE
 		// memebrs
 		Color                             color;  // 30 - CNAM
 		REX::EnumSet<Flag, std::uint32_t> flags;  // 34 - FNAM
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSColorForm) == 0x38);
 }

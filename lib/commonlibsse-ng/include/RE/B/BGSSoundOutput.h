@@ -121,8 +121,6 @@ namespace RE
 		REX::EnumSet<Type, std::uint32_t>  type;            // 2C - MNAM
 		DynamicAttenuationCharacteristics* attenuation;     // 30 - ANAM
 		SpeakerArrays*                     speakerOutputs;  // 38 - ONAM
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSSoundOutput) == 0x40);
 }

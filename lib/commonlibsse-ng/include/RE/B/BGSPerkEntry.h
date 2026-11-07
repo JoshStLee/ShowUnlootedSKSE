@@ -55,8 +55,6 @@ namespace RE
 
 		// members
 		Header header;  // 08 - PRKE
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSPerkEntry) == 0x10);
 }

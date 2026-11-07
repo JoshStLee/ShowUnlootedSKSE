@@ -11,8 +11,6 @@ namespace RE
 	public:
 		// members
 		NiPointer<TESObjectREFR> subject;  // 0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESSwitchRaceCompleteEvent) == 0x8);
 }

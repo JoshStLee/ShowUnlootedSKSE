@@ -32,7 +32,7 @@ namespace RE
 		// override (bhkBackfaceContactListener)
 		void ContactPointCallback(const hkpContactPointEvent&) override;  // 00
 
-		~FOCollisionListener() override;  // 00
+		~FOCollisionListener() override;  // 04
 
 		static FOCollisionListener* GetSingleton()
 		{
@@ -42,8 +42,6 @@ namespace RE
 
 		// members
 		BSTArray<ObjectDamageImpactData> damageImpacts;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(FOCollisionListener) == 0x28);
 }

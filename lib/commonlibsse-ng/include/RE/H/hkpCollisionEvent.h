@@ -26,8 +26,6 @@ namespace RE
 		CallbackSource                 source;      // 00
 		hkpRigidBody*                  bodies[2];   // 04
 		hkpSimpleConstraintContactMgr* contactMgr;  // 14
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpCollisionEvent) == 0x20);
 }

@@ -43,8 +43,6 @@ namespace RE
 		REX::EnumSet<SOUL_LEVEL, std::uint8_t> soulCapacity;   // 109 - SLCP
 		std::uint16_t                          unk10A;         // 10A
 		std::uint32_t                          unk10C;         // 10C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESSoulGem) == 0x110);
 }

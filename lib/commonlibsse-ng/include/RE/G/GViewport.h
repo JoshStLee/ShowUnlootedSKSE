@@ -39,8 +39,6 @@ namespace RE
 		float                             aspectRatio;    // 2C
 		REX::EnumSet<Flag, std::uint32_t> flags;          // 30
 		std::uint32_t                     pad34;          // 34
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GViewport) == 0x38);
 }

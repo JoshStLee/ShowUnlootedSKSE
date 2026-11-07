@@ -13,17 +13,17 @@ namespace RE
 		~MenuOpenHandler() override;  // 00
 
 		// override (MenuEventHandler)
-		bool CanProcess(InputEvent* a_event) override;      // 01
-		bool ProcessKinect(KinectEvent* a_event) override;  // 02
-		bool ProcessButton(ButtonEvent* a_event) override;  // 05
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#ifdef EXCLUSIVE_SKYRIM_VR
+		bool ProcessKinect(KinectEvent* a_event) override;  // 02 (VR 05)
+		bool ProcessButton(ButtonEvent* a_event) override;  // 05 (VR 08)
+#endif
 
 		// members
 		bool          unk10;  // 10
 		std::uint8_t  unk11;  // 11
 		std::uint16_t unk12;  // 12
 		std::uint32_t unk14;  // 14
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(MenuOpenHandler) == 0x18);
 }

@@ -1,16 +1,36 @@
 #include "RE/R/Renderer.h"
 
-#include "RE/S/ShadowState.h"
+#include "RE/R/RendererShadowState.h"
 #include "RE/S/State.h"
 
 namespace RE
 {
 	namespace BSGraphics
 	{
+		void SetDirtyStates(bool a_isCompute)
+		{
+			using func_t = void (*)(bool);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(75580, 77386) };
+			func(a_isCompute);
+		}
+
 		Renderer* Renderer::GetSingleton() noexcept
 		{
 			static REL::Relocation<Renderer*> singleton{ RELOCATION_ID(524907, 411393) };
 			return singleton.get();
+		}
+
+		void Renderer::UpdateCameraData(std::uint32_t a_flags)
+		{
+			using func_t = void (*)(Renderer*, std::uint32_t);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(75472, 77258) };
+			func(this, a_flags);
+		}
+
+		bool& Renderer::GetVolumetricLightingEnabled() noexcept
+		{
+			static REL::Relocation<bool*> enabled{ RELOCATION_ID(527940, 414913) };
+			return *enabled;
 		}
 
 		NiTexture::RendererData* Renderer::CreateRenderTexture(std::uint32_t a_width, std::uint32_t a_height)
@@ -50,9 +70,12 @@ namespace RE
 
 		void Renderer::End()
 		{
-			using func_t = decltype(&Renderer::End);
+			constexpr bool          kSkipHMDSubmit = false;
+			constexpr std::uint32_t kDefaultSubmitFlags = 0;
+
+			using func_t = void (*)(Renderer*, bool, std::uint32_t);
 			static REL::Relocation<func_t> func{ RELOCATION_ID(75461, 77246) };
-			return func(this);
+			return func(this, kSkipHMDSubmit, kDefaultSubmitFlags);
 		}
 
 		void Renderer::KillWindow(std::uint32_t a_windowID)
@@ -79,14 +102,14 @@ namespace RE
 		void Renderer::ResizeWindow(std::uint32_t a_windowID, std::uint32_t a_width, std::uint32_t a_height, bool a_fullscreen, bool a_borderless)
 		{
 			using func_t = decltype(&Renderer::ResizeWindow);
-			static REL::Relocation<func_t> func{ RELOCATION_ID(75454, 77239) };
+			static REL::Relocation<func_t> func{ RELOCATION_ID(75449, 77234) };
 			return func(this, a_windowID, a_width, a_height, a_fullscreen, a_borderless);
 		}
 
 		void Renderer::RequestWindowResize(std::uint32_t a_width, std::uint32_t a_height)
 		{
 			using func_t = decltype(&Renderer::RequestWindowResize);
-			static REL::Relocation<func_t> func{ RELOCATION_ID(75450, 77235) };
+			static REL::Relocation<func_t> func{ RELOCATION_ID(75450, AE_CHECK(SKSE::RUNTIME_SSE_1_7_99, 77235, 524254)) };
 			return func(this, a_width, a_height);
 		}
 
@@ -118,11 +141,60 @@ namespace RE
 			return func(this, a_windowID);
 		}
 
+		void Renderer::SetRenderTarget(std::uint32_t a_renderTargetSlot, RENDER_TARGET a_renderTarget, SetRenderTargetMode a_mode, bool a_updateViewport)
+		{
+			using func_t = decltype(&Renderer::SetRenderTarget);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(75654, 77453) };
+			return func(this, a_renderTargetSlot, a_renderTarget, a_mode, a_updateViewport);
+		}
+
 		void Renderer::UpdateViewPort(std::uint32_t a_unk1, std::uint32_t a_unk2, bool a_unk3)
 		{
 			using func_t = decltype(&Renderer::UpdateViewPort);
 			static REL::Relocation<func_t> func{ RELOCATION_ID(75455, 77240) };
 			return func(this, a_unk1, a_unk2, a_unk3);
+		}
+
+		REX::W32::ID3D11Buffer** Renderer::GetID3D11Resource(std::uint64_t a_bufferType, std::uint32_t** a_outIndex, std::uint32_t a_bufferKind)
+		{
+			using func_t = decltype(&Renderer::GetID3D11Resource);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(75561, 77362) };
+			return func(this, a_bufferType, a_outIndex, a_bufferKind);
+		}
+
+		void Renderer::DrawIndexedInstancedTriangles(TriShape* a_buffers, std::uint32_t a_startIndex, std::int32_t a_triangleCount, std::int32_t a_instanceCount, VertexDesc a_vertexDesc, VertexBuffer* a_secondaryStream)
+		{
+			using func_t = decltype(&Renderer::DrawIndexedInstancedTriangles);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(75479, 77265) };
+			func(this, a_buffers, a_startIndex, a_triangleCount, a_instanceCount, a_vertexDesc, a_secondaryStream);
+		}
+
+		void Renderer::ApplyState(bool a_arg2)
+		{
+			using func_t = decltype(&Renderer::ApplyState);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(75462, 77247) };
+			return func(this, a_arg2);
+		}
+
+		void Renderer::SubmitAccumulator(NiCamera* a_camera, BSShaderAccumulator* a_accumulator, std::uint32_t a_renderFlags)
+		{
+			using func_t = decltype(&Renderer::SubmitAccumulator);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(99789, 106436) };
+			return func(a_camera, a_accumulator, a_renderFlags);
+		}
+
+		void Renderer::StartAccumulating(NiCamera* a_camera, BSShaderAccumulator* a_accumulator, std::uint32_t a_renderFlags)
+		{
+			using func_t = decltype(&Renderer::StartAccumulating);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(99790, 106437) };
+			return func(a_camera, a_accumulator, a_renderFlags);
+		}
+
+		void Renderer::FinishAccumulatingPostResolveDepth(NiCamera* a_unusedCamera, BSShaderAccumulator* a_accumulator, std::uint32_t a_renderFlags)
+		{
+			using func_t = decltype(&Renderer::FinishAccumulatingPostResolveDepth);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(99791, 106438) };
+			return func(a_unusedCamera, a_accumulator, a_renderFlags);
 		}
 
 		void Renderer::Shutdown()
@@ -217,7 +289,7 @@ namespace RE
 			static const bool isVr = REL::Module::IsVR();
 			if (isVr) {
 				auto&      vrData = shadowState->GetVRRuntimeData();
-				auto*      buffer = reinterpret_cast<ID3D11Buffer*>(group.buffer);
+				auto*      buffer = group.buffer;
 				const auto bufferIndex = static_cast<UINT>(level);
 				if (vrData.VSConstantBuffers[bufferIndex] != buffer) {
 					deviceContext->VSSetConstantBuffers(bufferIndex, 1, &group.buffer);
@@ -238,7 +310,7 @@ namespace RE
 			static const bool isVr = REL::Module::IsVR();
 			if (isVr) {
 				auto&      vrData = shadowState->GetVRRuntimeData();
-				auto*      buffer = reinterpret_cast<ID3D11Buffer*>(group.buffer);
+				auto*      buffer = group.buffer;
 				const auto bufferIndex = static_cast<UINT>(level);
 				if (vrData.PSConstantBuffers[bufferIndex] != buffer) {
 					deviceContext->PSSetConstantBuffers(bufferIndex, 1, &group.buffer);

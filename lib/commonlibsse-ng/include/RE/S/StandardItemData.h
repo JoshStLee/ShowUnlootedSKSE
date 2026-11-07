@@ -23,8 +23,6 @@ namespace RE
 		InventoryEntryData* objDesc;  // 08
 		RefHandle           owner;    // 10
 		std::uint32_t       pad14;    // 14
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(StandardItemData) == 0x18);
 }

@@ -19,8 +19,6 @@ namespace RE
 
 		// members
 		GFxPlaceObjectUnpackedData data;  // 08
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GFxPlaceObjectUnpacked) == 0x68);
 }

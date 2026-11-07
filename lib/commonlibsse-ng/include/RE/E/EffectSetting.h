@@ -4,8 +4,8 @@
 #include "RE/B/BGSKeywordForm.h"
 #include "RE/B/BGSMenuDisplayObject.h"
 #include "RE/B/BSFixedString.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/B/BSTArray.h"
-#include "RE/B/BSTList.h"
 #include "RE/E/EffectArchetypes.h"
 #include "RE/F/FormTypes.h"
 #include "RE/M/MagicSystem.h"
@@ -154,8 +154,6 @@ namespace RE
 		std::int32_t                 effectLoadedCount;          // 188
 		std::int32_t                 associatedItemLoadedCount;  // 18C
 		TESCondition                 conditions;                 // 190
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(EffectSetting) == 0x198);
 }

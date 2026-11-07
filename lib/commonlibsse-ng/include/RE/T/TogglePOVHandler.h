@@ -13,20 +13,16 @@ namespace RE
 		~TogglePOVHandler() override;  // 00
 
 		// override (PlayerInputHandler)
-		bool CanProcess(InputEvent* a_event) override;                                  // 01
-		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_data) override;  // 04
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#ifdef EXCLUSIVE_SKYRIM_VR
+		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_data) override;  // 06
+#endif
 
 		// members
 		bool          pressRegistered;  // 18
 		std::uint8_t  pad19;            // 19
 		std::uint16_t pad1A;            // 1A
 		std::uint32_t pad1C;            // 1C
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(TogglePOVHandler) == 0x20);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(TogglePOVHandler) == 0x38);
-#endif
+	STATIC_ASSERT_SIZE(TogglePOVHandler, 0x20, 0x68);
 }

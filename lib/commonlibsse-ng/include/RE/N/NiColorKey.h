@@ -19,8 +19,6 @@ namespace RE
 	protected:
 		// members
 		NiColorA _color;  // 04
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiColorKey) == 0x14);
 }

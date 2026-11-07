@@ -18,9 +18,6 @@ namespace RE
 		virtual void CopyComponent(BaseFormComponent* a_rhs);  // 03 - { return; }
 
 		TES_HEAP_REDEFINE_NEW();
-
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BaseFormComponent) == 0x8);
 }

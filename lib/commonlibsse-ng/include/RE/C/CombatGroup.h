@@ -5,6 +5,7 @@
 #include "RE/B/BGSWorldLocation.h"
 #include "RE/B/BSAtomic.h"
 #include "RE/B/BSPointerHandle.h"
+#include "RE/B/BSTArray.h"
 #include "RE/C/CombatGroupDetectionListener.h"
 
 namespace RE
@@ -41,8 +42,6 @@ namespace RE
 		ActorHandle                        attackedMember;      // A0
 		std::uint16_t                      attackerCount;       // A4
 		REX::EnumSet<Flags, std::uint16_t> flags;               // A6
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(CombatTarget) == 0xA8);
 
@@ -53,8 +52,6 @@ namespace RE
 		ActorHandle memberHandle;              // 00
 		float       groupStrengthUpdateTimer;  // 04
 		float       threatValue;               // 08
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(CombatMember) == 0x0C);
 
@@ -73,6 +70,8 @@ namespace RE
 	class CombatGroup
 	{
 	public:
+		bool IsSearching() const;
+
 		// members
 		std::uint32_t                  groupID;                      // 000
 		std::uint32_t                  groupIndex;                   // 004
@@ -110,8 +109,6 @@ namespace RE
 		std::uint8_t                   unk15E;                       // 15E
 		std::uint8_t                   unk15F;                       // 15F
 		mutable BSReadWriteLock        lock;                         // 160
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(CombatGroup) == 0x168);
 }

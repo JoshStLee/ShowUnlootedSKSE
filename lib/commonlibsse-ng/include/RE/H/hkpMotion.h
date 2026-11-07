@@ -87,8 +87,6 @@ namespace RE
 		std::uint16_t                          pad132;                            // 132
 		hkHalf                                 gravityFactor;                     // 134
 		std::uint64_t                          pad138;                            // 138
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpMotion) == 0x140);
 }

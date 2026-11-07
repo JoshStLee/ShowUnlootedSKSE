@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RE/N/NiParticleSystem.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -28,7 +29,7 @@ namespace RE
 		void UpdateRigidDownwardPass(NiUpdateData& a_data, std::uint32_t a_arg2) override;                                // 2E
 		void UpdateWorldBound() override;                                                                                 // 2F
 		void UpdateWorldData(NiUpdateData* a_data) override;                                                              // 30
-		void OnVisible(NiCullingProcess& a_process) override;                                                             // 34
+		void OnVisible(NiCullingProcess& a_process, std::int32_t a_alphaGroupIndex) override;                             // 34
 #endif
 
 		struct MESH_PARTICLE_SYSTEM_RUNTIME_DATA
@@ -40,22 +41,11 @@ namespace RE
 	std::uint16_t pad19E;            /* 19E */
 		};
 
-		[[nodiscard]] inline MESH_PARTICLE_SYSTEM_RUNTIME_DATA& GetMeshParticleSystemRuntimeData() noexcept
-		{
-			return REL::RelocateMember<MESH_PARTICLE_SYSTEM_RUNTIME_DATA>(this, 0x198, 0x1C0);
-		}
-
-		[[nodiscard]] inline const MESH_PARTICLE_SYSTEM_RUNTIME_DATA& GetMeshParticleSystemRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<MESH_PARTICLE_SYSTEM_RUNTIME_DATA>(this, 0x198, 0x1C0);
-		}
-
+		RUNTIME_DATA_ACCESSOR_EX(MESH_PARTICLE_SYSTEM_RUNTIME_DATA, GetMeshParticleSystemRuntimeData, 0x198, 0x1C0);
 		// members
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT;  // 198, 1C0
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
 }
 #undef RUNTIME_DATA_CONTENT

@@ -5,6 +5,7 @@
 #include "RE/B/BSTSingleton.h"
 #include "RE/B/BSTSmartPointer.h"
 #include "RE/Q/QuickSaveLoadHandler.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -63,22 +64,15 @@ namespace RE
 		static MenuControls* GetSingleton();
 
 		void               AddHandler(MenuEventHandler* a_handler);
+		void               GetKeyRepeatRates(float& a_shortRate, float& a_longRate);
 		[[nodiscard]] bool InBeastForm() const noexcept { return GetRuntimeData().beastForm; }
 		void               RegisterHandler(MenuEventHandler* a_handler);
 		void               RemoveHandler(MenuEventHandler* a_handler);
 		bool               QueueScreenshot();
+		void               SetKeyRepeatRates(float a_shortRate, float a_longRate);
 		void               UnregisterHandler(MenuEventHandler* a_handler);
 
-		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x80, 0x88);
-		}
-
-		[[nodiscard]] inline const RUNTIME_DATA& GetRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x80, 0x88);
-		}
-
+		RUNTIME_DATA_ACCESSOR(RUNTIME_DATA, 0x80, 0x88);
 		[[nodiscard]] std::uint64_t GetOcclusionCullingToggleHandler() noexcept
 		{
 			if SKYRIM_REL_CONSTEXPR (!REL::Module::IsVR()) {
@@ -107,8 +101,6 @@ namespace RE
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT;  // 80, 88
 #endif
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(offsetof(MenuControls, handlers) == 0x18);
 

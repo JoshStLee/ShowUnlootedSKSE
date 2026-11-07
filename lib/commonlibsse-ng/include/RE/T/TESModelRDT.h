@@ -11,8 +11,6 @@ namespace RE
 		inline static constexpr auto VTABLE = VTABLE_TESModelRDT;
 
 		~TESModelRDT() override;  // 00
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESModelRDT) == 0x28);
 }

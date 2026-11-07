@@ -61,8 +61,6 @@ namespace RE
 		std::uint8_t                                padE9;                    // E9
 		std::uint16_t                               unkEA;                    // EA
 		std::uint32_t                               unkEC;                    // EC
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BSTempEffectParticle) == 0xF0);
 };

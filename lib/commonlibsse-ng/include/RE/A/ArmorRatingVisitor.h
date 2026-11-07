@@ -19,8 +19,6 @@ namespace RE
 
 		// members
 		BSScrapArray<TESObjectARMO*> armors;  // 20
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ArmorRatingVisitor) == 0x40);
 }

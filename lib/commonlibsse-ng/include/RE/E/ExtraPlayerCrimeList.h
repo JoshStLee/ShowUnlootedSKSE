@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RE/B/BSExtraData.h"
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/E/ExtraDataTypes.h"
 
 namespace RE
@@ -22,8 +22,6 @@ namespace RE
 
 		// members
 		BSSimpleList<Crime*>* crimes;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraPlayerCrimeList) == 0x18);
 }

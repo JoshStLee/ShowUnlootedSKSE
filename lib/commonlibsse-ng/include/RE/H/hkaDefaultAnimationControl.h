@@ -52,7 +52,5 @@ namespace RE
 		std::uint32_t                               padA4;                     // A4
 		hkArray<hkaDefaultAnimationControlListener> defaultListeners;          // A8
 		hkaDefaultAnimationControlMapperData*       mapper;                    // B8
-	private:
-		KEEP_FOR_RE()
 	};
 }

@@ -35,6 +35,7 @@ namespace RE
 		virtual void Unk_25(void);  // 25
 
 		static NiSkinInstance* Create();
+		NiSkinInstance*        Ctor();
 
 		// members
 		NiPointer<NiSkinData>      skinData;                      // 10
@@ -51,8 +52,6 @@ namespace RE
 		void*                      skinToWorldWorldToSkinMatrix;  // 58
 #if defined(EXCLUSIVE_SKYRIM_FLAT)
 		REX::W32::CRITICAL_SECTION lock;  // 60
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiSkinInstance) == 0x88);
 #else

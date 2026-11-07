@@ -28,8 +28,6 @@ namespace RE
 		float accumulatedMagnitude;  // 98
 		float maximumMagnitude;      // 9C
 		float holdTimer;             // A0
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(AccumulatingValueModifierEffect) == 0xA8);
 }

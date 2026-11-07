@@ -22,7 +22,5 @@ namespace RE
 
 		// members
 		Pointer* pointer;  // ??
-	private:
-		KEEP_FOR_RE()
 	};
 }

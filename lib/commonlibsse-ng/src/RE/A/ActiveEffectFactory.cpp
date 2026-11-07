@@ -10,5 +10,12 @@ namespace RE
 			static REL::Relocation<func_t> func{ RELOCATION_ID(33716, 34500) };
 			return func(a_caster, a_spell, a_effect, a_reason);
 		}
+
+		void ReportAddTargetFailure(CheckTargetArgs& a_args)
+		{
+			using func_t = decltype(&ActiveEffectFactory::ReportAddTargetFailure);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(33770, 34556) };
+			func(a_args);
+		}
 	}
 }

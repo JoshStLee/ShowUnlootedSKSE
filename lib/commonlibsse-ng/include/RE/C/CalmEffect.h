@@ -15,8 +15,6 @@ namespace RE
 
 		void  Start() override;                 // 14
 		float GetTargetValue() const override;  // 21 - { return -1.0f; }
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(CalmEffect) == 0x98);
 }

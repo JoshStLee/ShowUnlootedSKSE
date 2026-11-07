@@ -19,8 +19,6 @@ namespace RE
 
 		// members
 		std::uint64_t unk20[8];  // 20
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GFxButtonCharacterDef) == 0x60);
 }

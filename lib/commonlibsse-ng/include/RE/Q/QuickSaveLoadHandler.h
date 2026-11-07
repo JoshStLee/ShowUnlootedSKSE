@@ -4,13 +4,7 @@
 
 namespace RE
 {
-	class ButtonEvent;
-	class InputEvent;
-	class KinectEvent;
-	class MouseMoveEvent;
-	class ThumbstickEvent;
-
-	class QuickSaveLoadHandler : public MenuEventHandler
+	struct QuickSaveLoadHandler : public MenuEventHandler
 	{
 	public:
 		inline static constexpr auto RTTI = RTTI_QuickSaveLoadHandler;
@@ -19,11 +13,11 @@ namespace RE
 		~QuickSaveLoadHandler() override;  // 00
 
 		// override (MenuEventHandler)
-		bool CanProcess(InputEvent* a_event) override;              // 01
-		bool ProcessKinect(KinectEvent* a_event) override;          // 02
-		bool ProcessThumbstick(ThumbstickEvent* a_event) override;  // 03
-		bool ProcessMouseMove(MouseMoveEvent* a_event) override;    // 04
-		bool ProcessButton(ButtonEvent* a_event) override;          // 05
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#ifdef EXCLUSIVE_SKYRIM_VR
+		bool ProcessKinect(KinectEvent* a_event) override;  // 02 (VR 05)
+		bool ProcessButton(ButtonEvent* a_event) override;  // 05 (VR 08)
+#endif
 	};
 	static_assert(sizeof(QuickSaveLoadHandler) == 0x10);
 }

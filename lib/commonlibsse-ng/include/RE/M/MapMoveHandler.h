@@ -14,13 +14,16 @@ namespace RE
 		~MapMoveHandler() override;  // 00
 
 		// override (MapInputHandler)
-		bool CanProcess(InputEvent* a_event) override;              // 01
-		bool ProcessThumbstick(ThumbstickEvent* a_event) override;  // 03
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#ifdef EXCLUSIVE_SKYRIM_VR
+		bool ProcessThumbstick(ThumbstickEvent* a_event) override;  // 03 (VR 06)
+#endif
 
 		// members
 		BSTPoint2<float> unk18;  // 18
-	private:
-		KEEP_FOR_RE()
+#ifdef EXCLUSIVE_SKYRIM_VR
+		std::uint8_t unkVr20[0x8];
+#endif
 	};
-	static_assert(sizeof(MapMoveHandler) == 0x20);
+	STATIC_ASSERT_SIZE(MapMoveHandler, 0x20, 0x28);
 }

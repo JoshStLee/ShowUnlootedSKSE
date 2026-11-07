@@ -20,8 +20,6 @@ namespace RE
 
 		// members
 		BGSLoadGameSubBuffer havokBuffer;  // 10
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraSavedHavokData) == 0x18);
 }

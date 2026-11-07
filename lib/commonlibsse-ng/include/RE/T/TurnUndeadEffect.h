@@ -13,8 +13,6 @@ namespace RE
 
 		// override (ActiveEffect)
 		virtual ~TurnUndeadEffect();  // 13
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TurnUndeadEffect) == 0x98);
 }

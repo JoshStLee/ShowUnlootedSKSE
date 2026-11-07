@@ -13,8 +13,6 @@ namespace RE
 	{
 	public:
 		GMutexImpl* impl;  // 20
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GMutex) == 0x28);
 }

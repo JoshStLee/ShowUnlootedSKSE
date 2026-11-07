@@ -47,8 +47,6 @@ namespace RE
 
 		// members
 		BGSMusicTrack* track;  // 30
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(BGSMusicTrackFormWrapper) == 0x38);
 }

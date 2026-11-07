@@ -229,17 +229,19 @@ namespace RE
 		void CopyFromTemplateForms(TESActorBase** a_templateForms) override;  // 04
 
 		// override (ActorValueOwner)
-		float GetActorValue(ActorValue a_akValue) override;                 // 01
+		float GetActorValue(ActorValue a_akValue) const override;           // 01
 		void  SetActorValue(ActorValue a_akValue, float a_value) override;  // 07
 
 		// override (BSTEventSink<MenuOpenCloseEvent>)
 		BSEventNotifyControl ProcessEvent(const MenuOpenCloseEvent* a_event, BSTEventSource<MenuOpenCloseEvent>* a_eventSource) override;  // 01
 
+		// add
 		bool                         AddPerk(BGSPerk* a_perk, std::int8_t a_rank);
 		bool                         AddPerks(const std::vector<BGSPerk*>& a_perks, std::int8_t a_rank);
 		void                         ChangeHeadPart(BGSHeadPart* a_target);
 		bool                         ContainsKeyword(std::string_view a_editorID);
 		[[nodiscard]] BGSHeadPart**  GetBaseOverlays() const;
+		[[nodiscard]] float          GetBaseScale() const;
 		BGSHeadPart*                 GetCurrentHeadPartByType(HeadPartType a_type);
 		BGSHeadPart*                 GetHeadPartByType(HeadPartType a_type);
 		BGSHeadPart*                 GetHeadPartOverlayByType(HeadPartType a_type);
@@ -300,9 +302,6 @@ namespace RE
 
 	private:
 		void CopyPerkRankArray(const std::vector<PerkRankData>& a_copiedData);
-
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESNPC) == 0x268);
 }

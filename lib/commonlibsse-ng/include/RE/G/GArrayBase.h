@@ -496,7 +496,5 @@ namespace RE
 
 		// members
 		T data;  // 00
-	private:
-		KEEP_FOR_RE()
 	};
 }

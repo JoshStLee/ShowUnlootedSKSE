@@ -16,12 +16,15 @@ namespace RE
 	class hkpBroadPhase;
 	class hkpBroadPhaseBorder;
 	class hkpBroadPhaseBorderListener;
+	class hkpCdPointCollector;
+	class hkpCollidable;
 	class hkpCollisionDispatcher;
 	class hkpCollisionFilter;
 	class hkpConstraintListener;
 	class hkpContactImpulseLimitBreachedListener;
 	class hkpContactListener;
 	class hkpConvexListFilter;
+	class hkpEntity;
 	class hkpEntityEntityBroadPhaseListener;
 	class hkpEntityListener;
 	class hkpIslandActivationListener;
@@ -30,6 +33,7 @@ namespace RE
 	class hkpPhantom;
 	class hkpPhantomBroadPhaseListener;
 	class hkpPhantomListener;
+	class hkpRigidBody;
 	class hkpSimulation;
 	class hkpSimulationIsland;
 	class hkpTreeWorldManager;
@@ -43,6 +47,7 @@ namespace RE
 	class hkpWorldPostSimulationListener;
 	class hkWorldMemoryAvailableWatchDog;
 	struct hkpDebugInfoOnPendingOperationQueues;
+	struct hkpLinearCastInput;
 	struct hkpMtThreadStructure;
 	struct hkpProcessCollisionInput;
 	struct hkpViolatedConstraintArray;
@@ -83,6 +88,13 @@ namespace RE
 			return func(this, a_phantom);
 		}
 
+		inline void RemoveEntity(hkpEntity* a_entity)
+		{
+			using func_t = decltype(&hkpWorld::RemoveEntity);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(60493, 61305) };
+			return func(this, a_entity);
+		}
+
 		inline void CastRay(const hkpWorldRayCastInput& a_input, hkpWorldRayCastOutput& a_output) const
 		{
 			using func_t = decltype(&hkpWorld::CastRay);
@@ -90,14 +102,21 @@ namespace RE
 			return func(this, a_input, a_output);
 		}
 
+		inline void LinearCast(const hkpCollidable* a_colA, const hkpLinearCastInput& a_input, hkpCdPointCollector& a_castCollector, hkpCdPointCollector* a_startCollector = nullptr) const
+		{
+			using func_t = decltype(&hkpWorld::LinearCast);
+			static REL::Relocation<func_t> func{ RELOCATION_ID(60554, 61402) };
+			return func(this, a_colA, a_input, a_castCollector, a_startCollector);
+		}
+
 		// members
 		hkpSimulation*                                                    simulation;                                                 // 010
 		std::uint64_t                                                     pad018;                                                     // 018
 		hkVector4                                                         gravity;                                                    // 020
-		hkpSimulationIsland*                                              fixedIsland;                                                // 030
+		hkpSimulationIsland*                                              fixedIsland;                                                // 030 - not movable
 		hkpRigidBody*                                                     fixedRigidBody;                                             // 038
-		hkArray<hkpSimulationIsland*>                                     activeSimulationIslands;                                    // 040
-		hkArray<hkpSimulationIsland*>                                     inactiveSimulationIslands;                                  // 050
+		hkArray<hkpSimulationIsland*>                                     activeSimulationIslands;                                    // 040 - movable and moving
+		hkArray<hkpSimulationIsland*>                                     inactiveSimulationIslands;                                  // 050 - movable and not moving
 		hkArray<hkpSimulationIsland*>                                     dirtySimulationIslands;                                     // 060
 		hkpWorldMaintenanceMgr*                                           maintenanceMgr;                                             // 070
 		hkRefPtr<hkWorldMemoryAvailableWatchDog>                          memoryWatchDog;                                             // 078
@@ -201,8 +220,6 @@ namespace RE
 		std::uint16_t                                                     pad422;                                                     // 422
 		std::uint32_t                                                     pad424;                                                     // 424
 		std::uint64_t                                                     pad428;                                                     // 428
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpWorld) == 0x430);
 }

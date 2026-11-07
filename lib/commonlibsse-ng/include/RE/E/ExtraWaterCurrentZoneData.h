@@ -34,8 +34,6 @@ namespace RE
 		TESObjectCELL*                                  affectedCell;          // 48
 		NiPoint3                                        angularVelocity;       // 50
 		NiPoint3                                        linearVelocity;        // 5C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ExtraWaterCurrentZoneData) == 0x68);
 }

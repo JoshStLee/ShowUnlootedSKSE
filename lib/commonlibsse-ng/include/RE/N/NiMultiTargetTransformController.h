@@ -25,7 +25,7 @@ namespace RE
 		void                 SaveBinary(NiStream& a_stream) override;                                                                                                                                                                // 1B
 		bool                 IsEqual(NiObject* a_object) override;                                                                                                                                                                   // 1C
 		void                 ProcessClone(NiCloningProcess& a_cloning) override;                                                                                                                                                     // 1D
-		void                 Update(float a_time) override;                                                                                                                                                                          // 27
+		void                 Update(NiUpdateData& a_data) override;                                                                                                                                                                  // 27
 		bool                 TargetIsRequiredType() const override;                                                                                                                                                                  // 2E
 		std::uint16_t        GetInterpolatorCount() const override;                                                                                                                                                                  // 2F - { return numInterps; }
 		const char*          GetInterpolatorID(std::uint16_t a_index = 0) override;                                                                                                                                                  // 30 - { return targets[a_index]->name.c_str(); }
@@ -46,8 +46,6 @@ namespace RE
 		std::uint16_t                 numInterps;    // 58
 		std::uint16_t                 pad5A;         // 58
 		std::uint32_t                 pad5C;         // 5C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(NiMultiTargetTransformController) == 0x60);
 }

@@ -13,8 +13,6 @@ namespace RE
 
 		// override (ActiveEffect)
 		virtual ~ScriptedRefEffect();  // 13
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(ScriptedRefEffect) == 0xA0);
 }

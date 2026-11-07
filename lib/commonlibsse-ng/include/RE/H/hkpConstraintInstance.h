@@ -4,9 +4,11 @@
 
 namespace RE
 {
-	struct hkConstraintInternal;
 	class hkpConstraintData;
+	class hkpConstraintListener;
 	class hkpConstraintOwner;
+	struct hkConstraintInternal;
+	struct hkpConstraintAtom;
 	struct hkpModifierConstraintAtom;
 
 	class hkpConstraintInstance : public hkReferencedObject
@@ -59,8 +61,6 @@ namespace RE
 		uint64_t                                           userData;              // 58
 		hkConstraintInternal*                              internal;              // 60
 		uint32_t                                           uid;                   // 68
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(hkpConstraintInstance) == 0x70);
 

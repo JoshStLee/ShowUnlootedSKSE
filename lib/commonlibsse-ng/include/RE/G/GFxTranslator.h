@@ -105,8 +105,6 @@ namespace RE
 		// members
 		REX::EnumSet<WordWrappingType, std::uint32_t> wwMode;  // 18
 		std::uint32_t                                 pad1C;   // 1C
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(GFxTranslator) == 0x20);
 }

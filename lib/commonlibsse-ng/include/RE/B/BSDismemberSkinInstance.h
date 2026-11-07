@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RE/N/NiSkinInstance.h"
+#include "REL/RuntimeDataAccessors.h"
 
 namespace RE
 {
@@ -15,7 +16,7 @@ namespace RE
 		{
 		public:
 			// members
-			bool          editorVisible;    // 0
+			bool          visible;          // 0
 			bool          startNetBoneSet;  // 1
 			std::uint16_t slot;             // 2 - https://wiki.nexusmods.com/index.php/Skyrim_bodyparts_number
 		};
@@ -48,6 +49,8 @@ namespace RE
 		bool          IsEqual(NiObject* a_object) override;               // 1C
 		void          Unk_25(void) override;                              // 25
 
+		static BSDismemberSkinInstance* Create();
+
 		void UpdateDismemberPartion(std::uint16_t a_slot, bool a_enable)
 		{
 			using func_t = decltype(&BSDismemberSkinInstance::UpdateDismemberPartion);
@@ -55,25 +58,12 @@ namespace RE
 			return func(this, a_slot, a_enable);
 		}
 
-		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x88, 0x68);
-		}
-
-		[[nodiscard]] inline const RUNTIME_DATA& GetRuntimeData() const noexcept
-		{
-			return REL::RelocateMember<RUNTIME_DATA>(this, 0x88, 0x68);
-		}
-
+		RUNTIME_DATA_ACCESSOR(RUNTIME_DATA, 0x88, 0x68);
 		// members
 #ifndef SKYRIM_CROSS_VR
 		RUNTIME_DATA_CONTENT  // 88, 68
 #endif
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(BSDismemberSkinInstance) == 0xA0);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(BSDismemberSkinInstance) == 0x80);
-#endif
+	STATIC_ASSERT_SIZE(BSDismemberSkinInstance, 0xA0, 0xA0, 0x80, 0x68);
 }
 #undef RUNTIME_DATA_CONTENT

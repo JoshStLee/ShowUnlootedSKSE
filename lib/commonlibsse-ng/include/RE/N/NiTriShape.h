@@ -26,11 +26,13 @@ namespace RE
 		NiObject*   CreateClone([[maybe_unused]] NiCloningProcess& a_cloning) override;  // 17
 
 		// add
-		virtual std::uint16_t Unk_3B(bool unk1);  // 3B
-	};
-#if !defined(ENABLE_SKYRIM_AE) && !defined(ENABLE_SKYRIM_SE)
-	static_assert(sizeof(NiTriShape) == 0x160);
+#if defined(EXCLUSIVE_SKYRIM_FLAT)
+		// VR-only virtual; doesn't exist in SE/AE-only builds
+#elif defined(EXCLUSIVE_SKYRIM_VR)
+		virtual std::uint16_t Unk_3B(bool unk1);  // 3C - VR only
 #else
-	static_assert(sizeof(NiTriShape) == 0x138);
+		std::uint16_t Unk_3B(bool unk1);  // 3C - VR only, multi-runtime (non-virtual)
 #endif
+	};
+	STATIC_ASSERT_SIZE(NiTriShape, 0x138, 0x138, 0x160, 0x110);
 }

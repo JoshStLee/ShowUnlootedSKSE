@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RE/B/BSTList.h"
+#include "RE/B/BSSimpleList.h"
 #include "RE/F/FormTypes.h"
 #include "RE/T/TESForm.h"
 #include "RE/T/TESModel.h"
@@ -87,8 +87,6 @@ namespace RE
 		BSSimpleList<WeatherType*> weatherList;                     // 48 - WLST
 		TESTexture                 skyObjects[SkyObjects::kTotal];  // 58 - FNAM - GNAM
 		Timing                     timing;                          // 78 - TNAM
-	private:
-		KEEP_FOR_RE()
 	};
 	static_assert(sizeof(TESClimate) == 0x80);
 }

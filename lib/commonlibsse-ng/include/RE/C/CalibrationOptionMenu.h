@@ -12,6 +12,8 @@ namespace RE
 	public:
 		inline static constexpr auto RTTI = RTTI_CalibrationOptionMenu;
 
+		using MenuEventHandler::operator delete;
+
 		// override (IMenu)
 		void               Accept(CallbackProcessor* a_processor) override;  // 01
 		UI_MESSAGE_RESULTS ProcessMessage(UIMessage& a_message) override;    // 04
@@ -22,8 +24,6 @@ namespace RE
 		// members
 		bool unk50;     // 50 - Set in ProcessMessage, cleared in CanProcess
 		char pad51[7];  // 51
-	private:
-		KEEP_FOR_RE()
 	};
 #	if defined(EXCLUSIVE_SKYRIM_VR)
 	static_assert(sizeof(CalibrationOptionMenu) == 0x58);

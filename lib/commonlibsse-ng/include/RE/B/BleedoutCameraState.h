@@ -5,6 +5,8 @@
 #include "RE/N/NiSmartPointer.h"
 #include "RE/T/ThirdPersonState.h"
 
+#include "REL/Common.h"
+
 namespace RE
 {
 	class NiAVObject;
@@ -18,9 +20,18 @@ namespace RE
 		~BleedoutCameraState() override;  // 00
 
 		// override (ThirdPersonState)
-		void Begin() override;                                               // 01
-		void End() override;                                                 // 02
-		void Update(BSTSmartPointer<TESCameraState>& a_nextState) override;  // 03
+		void Begin() override;  // 01
+		void End() override;    // 02
+#if defined(EXCLUSIVE_SKYRIM_FLAT)
+		// Function doesn't exist in SE/AE-only builds
+#elif defined(EXCLUSIVE_SKYRIM_VR)
+		void Unk_03() override;  // 03 - VR only
+#else
+		void Unk_03();  // 03 - Multi-runtime
+#endif
+#ifndef SKYRIM_CROSS_VR
+		void Update(BSTSmartPointer<TESCameraState>& a_nextState) override;  // 03/04
+#endif
 
 		// members
 		NiMatrix3             rotationMtx;        // 0E8
@@ -34,14 +45,6 @@ namespace RE
 		bool                  useCurrentHeading;  // 134
 		std::uint8_t          pad135;             // 135
 		std::uint16_t         pad136;             // 136
-	private:
-		KEEP_FOR_RE()
 	};
-#if defined(EXCLUSIVE_SKYRIM_FLAT)
-	static_assert(sizeof(BleedoutCameraState) == 0x138);
-#elif defined(EXCLUSIVE_SKYRIM_VR)
-	static_assert(sizeof(BleedoutCameraState) == 0x150);
-#else
-	static_assert(sizeof(BleedoutCameraState) == 0x138);
-#endif
+	STATIC_ASSERT_SIZE(BleedoutCameraState, 0x138);
 }
